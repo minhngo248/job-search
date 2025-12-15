@@ -1,0 +1,320 @@
+.job-list-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.job-list-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.job-list-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.showing-count {
+  color: #718096;
+  font-size: 14px;
+  margin: 0;
+}
+
+.job-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* Responsive grid layout */
+@media (min-width: 768px) {
+  .job-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .job-list {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+  }
+}
+
+/* Loading state */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #0066cc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.loading-spinner.small {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  margin-right: 8px;
+  margin-bottom: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #718096;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Error state */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #e53e3e;
+  margin: 0 0 8px 0;
+}
+
+.error-state p {
+  color: #718096;
+  font-size: 16px;
+  margin: 0 0 24px 0;
+  max-width: 400px;
+}
+
+.retry-button {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #0052a3;
+}
+
+.retry-button:focus,
+.retry-button:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  color: #718096;
+  font-size: 16px;
+  margin: 0 0 8px 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* Load more section */
+.load-more-section {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 24px;
+}
+
+.load-more-button {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.load-more-button:hover:not(:disabled) {
+  background: #0052a3;
+  transform: translateY(-1px);
+}
+
+.load-more-button:focus,
+.load-more-button:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+.load-more-button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .job-list-container {
+    padding: 0;
+  }
+  
+  .job-list-header h2 {
+    font-size: 20px;
+  }
+  
+  .loading-state,
+  .error-state,
+  .empty-state {
+    padding: 40px 20px;
+  }
+  
+  .error-icon,
+  .empty-icon {
+    font-size: 36px;
+  }
+  
+  .error-state h3,
+  .empty-state h3 {
+    font-size: 18px;
+  }
+  
+  .error-state p,
+  .empty-state p,
+  .loading-state p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .job-list-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+  
+  .job-list-header h2 {
+    font-size: 18px;
+  }
+  
+  .showing-count {
+    font-size: 13px;
+  }
+  
+  .loading-state,
+  .error-state,
+  .empty-state {
+    padding: 30px 16px;
+  }
+  
+  .error-icon,
+  .empty-icon {
+    font-size: 32px;
+  }
+  
+  .error-state h3,
+  .empty-state h3 {
+    font-size: 16px;
+  }
+  
+  .error-state p,
+  .empty-state p,
+  .loading-state p {
+    font-size: 13px;
+  }
+  
+  .load-more-section {
+    padding: 24px 0;
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  .retry-button,
+  .load-more-button {
+    min-height: 44px;
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+  
+  .load-more-button {
+    padding: 14px 32px;
+  }
+}
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .job-list-header {
+    border-bottom: 2px solid #000;
+  }
+  
+  .retry-button,
+  .load-more-button {
+    border: 2px solid #0066cc;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+  }
+  
+  .retry-button,
+  .load-more-button {
+    transition: none;
+  }
+  
+  .load-more-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
