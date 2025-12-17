@@ -1,0 +1,6 @@
+{
+    "Parameters":{
+        "DYNAMODB_ENDPOINT": "http://host.docker.internal:8000",
+        "DYNAMODB_TABLE": "JobTable"
+    }
+}

@@ -1,6 +1,5 @@
 .job-list-container {
   width: 100%;
-  max-width: 800px;
   margin: 0 auto;
 }
 
@@ -25,21 +24,37 @@
 
 .job-list {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(var(--grid-columns-mobile), 1fr);
+  gap: var(--grid-gap-mobile);
+  width: 100%;
 }
 
-/* Responsive grid layout */
-@media (min-width: 768px) {
+/* Responsive grid layout with dynamic columns */
+@media (min-width: 768px) and (max-width: 1023px) {
   .job-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(var(--grid-columns-tablet), 1fr);
+    gap: var(--grid-gap-tablet);
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1024px) and (max-width: 1439px) {
   .job-list {
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(var(--grid-columns-desktop), 1fr);
+    gap: var(--grid-gap-desktop);
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .job-list {
+    grid-template-columns: repeat(var(--grid-columns-desktop-large), 1fr);
+    gap: var(--grid-gap-large);
+  }
+}
+
+@media (min-width: 1920px) {
+  .job-list {
+    grid-template-columns: repeat(var(--grid-columns-ultra-wide), 1fr);
+    gap: var(--grid-gap-large);
   }
 }
 

@@ -83,3 +83,6 @@ MANIFEST
 venv/
 ENV/
 env/
+
+# Kiro
+.kiro/specs

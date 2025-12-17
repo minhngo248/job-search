@@ -1,0 +1,260 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  backend
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+- AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    LoggingConfig:
+      LogFormat: JSON
+    Environment:
+      Variables:
+        DYNAMODB_ENDPOINT: ''
+
+Resources:
+  getAllJobsFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      GetItemsConnector:
+        Properties:
+          Destination:
+            Id: JobTable
+          Permissions:
+            - Read
+    Properties:
+      Handler: src/handlers/get-all-jobs.handler
+      Runtime: nodejs24.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobTable
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref JobTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /
+            Method: GET
+
+  getByIdFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      GetItemsConnector:
+        Properties:
+          Destination:
+            Id: JobTable
+          Permissions:
+            - Read
+    Properties:
+      Handler: src/handlers/get-by-id.handler
+      Runtime: nodejs24.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobTable
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref JobTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /{id}
+            Method: GET
+
+  putJobFunction:
+    Type: AWS::Serverless::Function
+    Connectors:
+      GetItemsConnector:
+        Properties:
+          Destination:
+            Id: JobTable
+          Permissions:
+            - Write
+    Properties:
+      Handler: src/handlers/put-job.handler
+      Runtime: nodejs24.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A simple example includes a HTTP put method to add one job to a DynamoDB table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobTable
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref JobTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /
+            Method: PUT
+            RequestModel:
+              Model: JobModel
+              Required: true
+              ValidateBody: true
+              ValidateParameters: false
+
+  deleteById:
+    Type: AWS::Serverless::Function
+    Connectors:
+      GetItemsConnector:
+        Properties:
+          Destination:
+            Id: JobTable
+          Permissions:
+            - Write
+    Properties:
+      Handler: src/handlers/delete-by-id.handler
+      Runtime: nodejs24.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function that handles job deletion.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobTable
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref JobTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /{id}
+            Method: DELETE
+
+  JobTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Auth:
+        ApiKeyRequired: true  # Requires API key for all methods
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      Models:
+        JobModel:
+          type: object
+          required:
+            - job_title
+            - company_name
+            - link
+            - source
+            - year_of_experience
+            - published_date
+          properties:
+            job_title:
+              type: string
+              minLength: 1
+              maxLength: 50
+              pattern: "^[a-zA-Z0-9_]+$"
+            company_name:
+              type: string
+              minLength: 1
+              maxLength: 50
+              pattern: "^[a-zA-Z0-9_]+$"
+            link:
+              type: string
+              minLength: 1
+              maxLength: 50
+              pattern: "^[a-zA-Z0-9_]+$"
+            source:
+              type: string
+              enum: ['LinkedIn', 'Glassdoor', 'leem', 'snitem', 'other']
+            year_of_experience:
+              type: number
+              minimum: 0
+            published_date:
+              type: string
+              format: date-time
+            description:
+              type: string
+              minLength: 0
+              maxLength: 50
+              pattern: "^[a-zA-Z0-9_]+$"
+            salary_range:
+              type: number
+              minimum: 0
+
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Name: JobApiKey
+      Enabled: true
+      Description: API Key for accessing the SAM API
+      StageKeys:
+        - RestApiId: !Ref Api
+          StageName: !Ref Api.Stage
+
+  # Usage Plan Key (associates API key with usage plan)
+  UsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref UsagePlan
+
+  # Create your own usage plan with full control
+  UsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      UsagePlanName: MyUsagePlan
+      Description: "Custom usage plan with specific settings"
+      Throttle:
+        BurstLimit: 100
+        RateLimit: 50
+      ApiStages:
+        - ApiId: !Ref Api
+          Stage: !Ref Api.Stage
+
+Outputs:
+  WebEndpoint:
+    Description: API Gateway endpoint URL for prod stage
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/prod'
+  ApiKeyId:
+    Description: API Key ID
+    Value: !Ref ApiKey
+  UsagePlanId:
+    Description: "Usage Plan ID"
+    Value: !Ref UsagePlan
+    Export:
+      Name: !Sub "${AWS::StackName}-UsagePlanId"
