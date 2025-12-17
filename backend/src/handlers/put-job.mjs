@@ -5,8 +5,6 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { Temporal } from '@js-temporal/polyfill';
 
-// Get current time in a specific timezone (Paris for your Île-de-France jobs)
-const now = Temporal.Now.zonedDateTimeISO('Europe/Paris');
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
@@ -35,22 +33,38 @@ export const handler = async (event) => {
     const description = body.description;
     const salary_range = body.salary_range;
 
+    // Get current time in Paris timezone and convert to ISO string for DynamoDB
+    const now = Temporal.Now.zonedDateTimeISO('Europe/Paris');
+    const nowString = now.toInstant().toString(); // Converts to ISO 8601 string
+
+    // Generate UUID for the job (DynamoDB requires explicit ID generation)
+    const job_id = crypto.randomUUID();
+
     // Creates a new item, or replaces an old item with a new item
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
     var params = {
         TableName : tableName,
-        Item: { job_title: job_title, company_name: company_name,
-            link: link, source: source, year_of_experience: year_of_experience,
-            published_date: published_date, description: description,
-            salary_range: salary_range, created_at: now, updated_date: now }
+        Item: {
+            id: job_id,
+            job_title: job_title, 
+            company_name: company_name,
+            link: link, 
+            source: source, 
+            year_of_experience: year_of_experience,
+            published_date: published_date, 
+            description: description,
+            salary_range: salary_range, 
+            created_at: nowString, 
+            updated_at: nowString 
+        }
     };
 
     try {
         const data = await ddbDocClient.send(new PutCommand(params));
         console.log("Success - item added or updated", data);
-      } catch (err) {
+    } catch (err) {
         console.log("Error", err.stack);
-      }
+    }
 
     const response = {
         statusCode: 200,
