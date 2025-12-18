@@ -2,65 +2,63 @@
 
 ## Architecture
 - **Serverless**: AWS Lambda functions with API Gateway
-- **Database**: DynamoDB with GSI for filtering
-- **Infrastructure**: AWS CDK (TypeScript)
-- **Monitoring**: CloudWatch with custom dashboards and alarms
+- **Database**: DynamoDB with simple table structure
+- **Infrastructure**: AWS SAM (Serverless Application Model) with YAML templates
+- **Monitoring**: CloudWatch with Lambda function logs
+- **Deployment**: GitHub Actions with SAM CLI
 
 ## Backend
-- **Runtime**: Python 3.11
-- **Framework**: Lambda functions with boto3
-- **Dependencies**: requests, aiohttp, beautifulsoup4, pydantic
-- **Code Quality**: Black formatter, flake8 linter, mypy type checking
-- **Testing**: pytest with asyncio support
+- **Runtime**: Node.js 24.x
+- **Framework**: AWS Lambda functions with AWS SDK
+- **Infrastructure**: AWS SAM template (template.yaml)
+- **API**: API Gateway with API key authentication
+- **Database**: DynamoDB SimpleTable with CRUD operations
+- **Testing**: Jest framework for unit tests
 
 ## Frontend
 - **Framework**: React 19 with TypeScript
 - **Build Tool**: Vite
-- **Development Server**: Port 3000 with API proxy
+- **Development Server**: Port 5173 (Vite default)
 - **Linting**: ESLint with React hooks plugin
-
-## Infrastructure
-- **IaC**: AWS CDK 2.100.0 with TypeScript
-- **Deployment**: CDK deploy with usage plans and API keys
-- **Scheduling**: EventBridge rules for scraper (3x daily)
-- **Lambda Config**: Auto-managed concurrency, 15min timeout for scraper
+- **Deployment**: Local development only (deployment TBD)
 
 ## Common Commands
 
-### Setup
+### Backend Development
 ```bash
-make install                    # Install all dependencies
-make install-backend           # Backend only
-make install-frontend          # Frontend only
-make install-infrastructure    # CDK only
+cd backend
+npm install                     # Install dependencies
+sam validate                    # Validate SAM template
+sam build                       # Build Lambda functions
+sam local start-api            # Start API locally (port 3000)
+sam deploy --guided            # Deploy to AWS (first time)
+sam deploy                     # Deploy updates
+```
+
+### Frontend Development
+```bash
+cd frontend
+npm install                     # Install dependencies
+npm run dev                     # Start dev server (port 5173)
+npm run build                   # Build for production
+npm run lint                    # Run ESLint
+```
+
+### Local DynamoDB
+```bash
+# Start DynamoDB Local (requires Docker)
+docker run -p 8000:8000 amazon/dynamodb-local
+# Use with SAM local
+sam local start-api --docker-network host
 ```
 
 ### Testing
 ```bash
-make test                      # Run all tests
-make test-backend             # Backend tests with pytest
-make test-frontend            # Frontend tests (--run flag for CI)
-```
-
-### Code Quality
-```bash
-make lint-backend             # flake8 + mypy
-make format-backend           # Black formatting
-```
-
-### Development
-```bash
-cd frontend && npm run dev    # Start dev server (port 3000)
-cd infrastructure && npm run watch  # CDK watch mode
-```
-
-### Deployment
-```bash
-cd infrastructure && npm run deploy    # Deploy stack
-cd infrastructure && npm run get-api-key  # Get API key for frontend
+cd backend
+npm test                       # Run Jest tests
 ```
 
 ## Code Style
-- **Python**: Black formatting (88 char line length), type hints required
-- **TypeScript**: ESLint configuration with React rules
-- **Testing**: Descriptive test names with `test_` prefix
+- **JavaScript/TypeScript**: ESLint configuration with standard rules
+- **SAM Templates**: YAML formatting with proper indentation
+- **Testing**: Jest test framework with descriptive test names
