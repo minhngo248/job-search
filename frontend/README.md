@@ -38,7 +38,7 @@ A React TypeScript application for browsing medical device regulatory job postin
    npm run dev
    ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser
+3. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ### Build
 
@@ -61,6 +61,20 @@ The application uses a custom API client (`src/services/api.ts`) that:
 - Provides TypeScript interfaces for all API responses
 - Supports job filtering by date, experience, and city
 
+### Additional Scripts
+
+```bash
+# Type checking
+npm run type-check
+
+# Preview production build
+npm run preview
+```
+
 ### CORS Configuration
 
-For local development, the Vite configuration includes a proxy setup to handle CORS issues when connecting to the API Gateway.
+For local development, the Vite configuration includes a proxy setup to handle CORS issues when connecting to the API Gateway. The backend API Gateway is configured with CORS headers to allow frontend access.
+
+### Deployment
+
+The frontend is currently configured for local development only. Deployment strategy (S3 + CloudFront, Vercel, Netlify, etc.) will be determined later.

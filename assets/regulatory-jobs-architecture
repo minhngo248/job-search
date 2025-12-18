@@ -1,0 +1,39 @@
+digraph "Regulatory Jobs Application Architecture" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="Regulatory Jobs Application Architecture" nodesep=0.60 pad=2.0 rankdir=LR ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	acb72c2cc928409d86471e206c34b406 [label=User height=1.9 image="mobile.png" shape=none]
+	"8715d1e3d861410b91c8115bb945f811" [label="React Frontend
+(Local - Port 5173)" height=2.3 image="react.png" shape=none]
+	subgraph "cluster_AWS Cloud" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="AWS Cloud" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		cbc59ce4140b4bfa835ba426ff6aea34 [label="API Gateway
+(with API Key)" height=2.3 image="api-gateway.png" shape=none]
+		eventbridge_scheduler [label="EventBridge Scheduler
+(6h, 14h, 22h)" height=2.3 image="eventbridge-scheduler.png" shape=none]
+		subgraph "cluster_Lambda Functions" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Lambda Functions" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"2fa42b166cc34f0c9debee1a5395a799" [label="Get All Jobs" height=1.9 image="lambda.png" shape=none]
+			"83f32e8587a444219a7beb444151eaf4" [label="Get Job by ID" height=1.9 image="lambda.png" shape=none]
+			e10a36b65fe0437ca81bc479dd0212f4 [label="Put Job" height=1.9 image="lambda.png" shape=none]
+			"6ed4afcdc0b043c3abbb0e725a51b37f" [label="Delete Job" height=1.9 image="lambda.png" shape=none]
+			worker_function [label="Job Scraper
+(Worker Function)" height=2.3 image="lambda.png" shape=none]
+		}
+		e9524e49387a40078e588c0aa629c4d4 [label="Jobs Table" height=1.9 image="dynamodb.png" shape=none]
+	}
+	"54733f3045244ac4b58041e62af1bd01" [label="GitHub Actions
+(CI/CD)" height=2.3 image="github-actions-icon.png" shape=none]
+	acb72c2cc928409d86471e206c34b406 -> "8715d1e3d861410b91c8115bb945f811" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"8715d1e3d861410b91c8115bb945f811" -> cbc59ce4140b4bfa835ba426ff6aea34 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	cbc59ce4140b4bfa835ba426ff6aea34 -> "2fa42b166cc34f0c9debee1a5395a799" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	cbc59ce4140b4bfa835ba426ff6aea34 -> "83f32e8587a444219a7beb444151eaf4" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	cbc59ce4140b4bfa835ba426ff6aea34 -> e10a36b65fe0437ca81bc479dd0212f4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	cbc59ce4140b4bfa835ba426ff6aea34 -> "6ed4afcdc0b043c3abbb0e725a51b37f" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2fa42b166cc34f0c9debee1a5395a799" -> e9524e49387a40078e588c0aa629c4d4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"83f32e8587a444219a7beb444151eaf4" -> e9524e49387a40078e588c0aa629c4d4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	e10a36b65fe0437ca81bc479dd0212f4 -> e9524e49387a40078e588c0aa629c4d4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"6ed4afcdc0b043c3abbb0e725a51b37f" -> e9524e49387a40078e588c0aa629c4d4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	eventbridge_scheduler -> worker_function [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	worker_function -> e9524e49387a40078e588c0aa629c4d4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+}
