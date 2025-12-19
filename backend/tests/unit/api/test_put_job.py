@@ -9,13 +9,14 @@ import pytest
 from moto import mock_aws
 import boto3
 
-from src.handlers.put_job import handler
-
 
 @pytest.fixture
 def mock_env():
     """Mock environment variables."""
-    with patch.dict(os.environ, {'DYNAMODB_TABLE': 'test-jobs-table'}):
+    with patch.dict(os.environ, {
+        'DYNAMODB_TABLE': 'test-jobs-table',
+        'AWS_DEFAULT_REGION': 'us-east-1'
+    }, clear=True):
         yield
 
 
@@ -49,28 +50,37 @@ def test_put_job_success(mock_env, sample_event):
     """Test successful job creation."""
     # Create mock DynamoDB table
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-    dynamodb.create_table(
+    table = dynamodb.create_table(
         TableName='test-jobs-table',
         KeySchema=[{'AttributeName': 'id', 'KeyType': 'HASH'}],
         AttributeDefinitions=[{'AttributeName': 'id', 'AttributeType': 'S'}],
         BillingMode='PAY_PER_REQUEST'
     )
     
-    # Call handler
-    result = handler(sample_event, {})
+    # Wait for table to be created
+    table.wait_until_exists()
     
-    # Verify response
-    assert result['statusCode'] == 200
-    response_body = json.loads(result['body'])
-    assert response_body['job_title'] == 'Software Engineer'
-    assert response_body['company_name'] == 'Tech Corp'
-    assert 'id' in response_body
-    assert 'created_at' in response_body
-    assert 'updated_at' in response_body
+    # Patch the dynamodb resource in the handler module
+    with patch('src.handlers.put_job.dynamodb', dynamodb):
+        from src.handlers.put_job import handler
+        
+        # Call handler
+        result = handler(sample_event, {})
+        
+        # Verify response
+        assert result['statusCode'] == 200
+        response_body = json.loads(result['body'])
+        assert response_body['job_title'] == 'Software Engineer'
+        assert response_body['company_name'] == 'Tech Corp'
+        assert 'id' in response_body
+        assert 'created_at' in response_body
+        assert 'updated_at' in response_body
 
 
 def test_put_job_wrong_method(mock_env):
     """Test handler with wrong HTTP method."""
+    from src.handlers.put_job import handler
+    
     event = {'httpMethod': 'GET'}
     
     with pytest.raises(ValueError, match="putJob only accepts PUT method"):
@@ -79,6 +89,8 @@ def test_put_job_wrong_method(mock_env):
 
 def test_put_job_invalid_json(mock_env):
     """Test handler with invalid JSON."""
+    from src.handlers.put_job import handler
+    
     event = {
         'httpMethod': 'PUT',
         'body': 'invalid json'
@@ -93,6 +105,8 @@ def test_put_job_invalid_json(mock_env):
 
 def test_put_job_missing_required_fields(mock_env):
     """Test handler with missing required fields."""
+    from src.handlers.put_job import handler
+    
     event = {
         'httpMethod': 'PUT',
         'body': json.dumps({
@@ -114,12 +128,15 @@ def test_put_job_minimal_data(mock_env):
     """Test job creation with minimal required data."""
     # Create mock DynamoDB table
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-    dynamodb.create_table(
+    table = dynamodb.create_table(
         TableName='test-jobs-table',
         KeySchema=[{'AttributeName': 'id', 'KeyType': 'HASH'}],
         AttributeDefinitions=[{'AttributeName': 'id', 'AttributeType': 'S'}],
         BillingMode='PAY_PER_REQUEST'
     )
+    
+    # Wait for table to be created
+    table.wait_until_exists()
     
     minimal_job = {
         'job_title': 'Data Scientist',
@@ -136,11 +153,15 @@ def test_put_job_minimal_data(mock_env):
         'body': json.dumps(minimal_job)
     }
     
-    # Call handler
-    result = handler(event, {})
-    
-    # Verify response
-    assert result['statusCode'] == 200
-    response_body = json.loads(result['body'])
-    assert response_body['job_title'] == 'Data Scientist'
-    assert 'id' in response_body
+    # Patch the dynamodb resource in the handler module
+    with patch('src.handlers.put_job.dynamodb', dynamodb):
+        from src.handlers.put_job import handler
+        
+        # Call handler
+        result = handler(event, {})
+        
+        # Verify response
+        assert result['statusCode'] == 200
+        response_body = json.loads(result['body'])
+        assert response_body['job_title'] == 'Data Scientist'
+        assert 'id' in response_body

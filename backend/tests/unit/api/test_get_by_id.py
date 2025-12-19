@@ -9,13 +9,14 @@ import pytest
 from moto import mock_aws
 import boto3
 
-from src.handlers.get_by_id import handler
-
 
 @pytest.fixture
 def mock_env():
     """Mock environment variables."""
-    with patch.dict(os.environ, {'DYNAMODB_TABLE': 'test-jobs-table'}):
+    with patch.dict(os.environ, {
+        'DYNAMODB_TABLE': 'test-jobs-table',
+        'AWS_DEFAULT_REGION': 'us-east-1'
+    }, clear=True):
         yield
 
 
@@ -41,6 +42,9 @@ def test_get_by_id_success(mock_env, sample_event):
         BillingMode='PAY_PER_REQUEST'
     )
     
+    # Wait for table to be created
+    table.wait_until_exists()
+    
     # Add test item
     test_item = {
         'id': 'job1',
@@ -50,18 +54,24 @@ def test_get_by_id_success(mock_env, sample_event):
     }
     table.put_item(Item=test_item)
     
-    # Call handler
-    result = handler(sample_event, {})
-    
-    # Verify response
-    assert result['statusCode'] == 200
-    response_body = json.loads(result['body'])
-    assert response_body['id'] == 'job1'
-    assert response_body['job_title'] == 'Software Engineer'
+    # Patch the dynamodb resource in the handler module
+    with patch('src.handlers.get_by_id.dynamodb', dynamodb):
+        from src.handlers.get_by_id import handler
+        
+        # Call handler
+        result = handler(sample_event, {})
+        
+        # Verify response
+        assert result['statusCode'] == 200
+        response_body = json.loads(result['body'])
+        assert response_body['id'] == 'job1'
+        assert response_body['job_title'] == 'Software Engineer'
 
 
 def test_get_by_id_wrong_method(mock_env):
     """Test handler with wrong HTTP method."""
+    from src.handlers.get_by_id import handler
+    
     event = {'httpMethod': 'POST'}
     
     with pytest.raises(ValueError, match="getById only accept GET method"):
@@ -70,6 +80,8 @@ def test_get_by_id_wrong_method(mock_env):
 
 def test_get_by_id_missing_path_parameters(mock_env):
     """Test handler with missing path parameters."""
+    from src.handlers.get_by_id import handler
+    
     event = {
         'httpMethod': 'GET',
         'pathParameters': None
@@ -87,22 +99,29 @@ def test_get_by_id_not_found(mock_env):
     """Test retrieval of non-existent job."""
     # Create empty mock DynamoDB table
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-    dynamodb.create_table(
+    table = dynamodb.create_table(
         TableName='test-jobs-table',
         KeySchema=[{'AttributeName': 'id', 'KeyType': 'HASH'}],
         AttributeDefinitions=[{'AttributeName': 'id', 'AttributeType': 'S'}],
         BillingMode='PAY_PER_REQUEST'
     )
     
+    # Wait for table to be created
+    table.wait_until_exists()
+    
     event = {
         'httpMethod': 'GET',
         'pathParameters': {'id': 'nonexistent'}
     }
     
-    # Call handler
-    result = handler(event, {})
-    
-    # Verify response
-    assert result['statusCode'] == 404
-    response_body = json.loads(result['body'])
-    assert 'Job not found' in response_body['error']
+    # Patch the dynamodb resource in the handler module
+    with patch('src.handlers.get_by_id.dynamodb', dynamodb):
+        from src.handlers.get_by_id import handler
+        
+        # Call handler
+        result = handler(event, {})
+        
+        # Verify response
+        assert result['statusCode'] == 404
+        response_body = json.loads(result['body'])
+        assert 'Job not found' in response_body['error']
