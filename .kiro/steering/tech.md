@@ -8,12 +8,13 @@
 - **Deployment**: GitHub Actions with SAM CLI
 
 ## Backend
-- **Runtime**: Node.js 24.x
-- **Framework**: AWS Lambda functions with AWS SDK
+- **Runtime**: Python 3.12
+- **Framework**: AWS Lambda functions with boto3 SDK
 - **Infrastructure**: AWS SAM template (template.yaml)
 - **API**: API Gateway with API key authentication
 - **Database**: DynamoDB SimpleTable with CRUD operations
-- **Testing**: Jest framework for unit tests
+- **Testing**: pytest framework for unit tests
+- **Validation**: Pydantic for request/response validation
 
 ## Frontend
 - **Framework**: React 19 with TypeScript
@@ -27,7 +28,8 @@
 ### Backend Development
 ```bash
 cd backend
-npm install                     # Install dependencies
+uv sync                         # Install dependencies (recommended)
+# or pip install -r requirements.txt
 sam validate                    # Validate SAM template
 sam build                       # Build Lambda functions
 sam local start-api            # Start API locally (port 3000)
@@ -55,10 +57,13 @@ sam local start-api --docker-network host
 ### Testing
 ```bash
 cd backend
-npm test                       # Run Jest tests
+pytest                         # Run pytest tests
+pytest -v                      # Run with verbose output
+pytest --cov=src              # Run with coverage
 ```
 
 ## Code Style
+- **Python**: Black formatter, flake8 linter, mypy type checking
 - **JavaScript/TypeScript**: ESLint configuration with standard rules
 - **SAM Templates**: YAML formatting with proper indentation
-- **Testing**: Jest test framework with descriptive test names
+- **Testing**: pytest framework with descriptive test names
