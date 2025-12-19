@@ -1,0 +1,94 @@
+"""
+Lambda handler for deleting a job by ID from DynamoDB table.
+"""
+import json
+import logging
+import os
+from typing import Any, Dict
+
+import boto3
+from botocore.exceptions import ClientError
+
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Create DynamoDB client outside handler for connection reuse
+# Check if we're running locally with DynamoDB Local
+dynamodb_endpoint = os.environ.get('DYNAMODB_ENDPOINT')
+if dynamodb_endpoint:
+    # Use local DynamoDB endpoint
+    dynamodb = boto3.resource('dynamodb', endpoint_url=dynamodb_endpoint)
+else:
+    # Use AWS DynamoDB
+    dynamodb = boto3.resource('dynamodb')
+
+
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    """
+    Lambda handler to delete a job by ID from DynamoDB table.
+    
+    Args:
+        event: API Gateway event
+        context: Lambda context
+        
+    Returns:
+        API Gateway response
+    """
+    if event.get('httpMethod') != 'DELETE':
+        raise ValueError(f"deleteId only accept DELETE method, you tried: {event.get('httpMethod')}")
+    
+    logger.info(f"Received event: {json.dumps(event)}")
+    
+    # Get table name from environment
+    table_name = os.environ.get('DYNAMODB_TABLE')
+    if not table_name:
+        raise ValueError("DYNAMODB_TABLE environment variable is required")
+    
+    table = dynamodb.Table(table_name)
+    
+    # Get id from pathParameters from API Gateway
+    path_parameters = event.get('pathParameters', {})
+    if not path_parameters or 'id' not in path_parameters:
+        return {
+            'statusCode': 400,
+            'body': json.dumps({'error': 'Missing required parameter: id'})
+        }
+    
+    job_id = path_parameters['id']
+    
+    # Validate that ID is not empty (DynamoDB doesn't allow empty string keys)
+    if not job_id or job_id.strip() == '':
+        return {
+            'statusCode': 404,
+            'body': json.dumps({'error': 'Job not found'})
+        }
+    
+    try:
+        # First check if item exists
+        get_response = table.get_item(Key={'id': job_id})
+        if 'Item' not in get_response:
+            return {
+                'statusCode': 404,
+                'body': json.dumps({'error': 'Job not found'})
+            }
+        
+        # Delete the item
+        table.delete_item(Key={'id': job_id})
+        
+        logger.info(f"Successfully deleted job with id: {job_id}")
+        
+    except ClientError as e:
+        logger.error(f"Error deleting item: {e}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': 'Failed to delete job'})
+        }
+    
+    response_body = {
+        'statusCode': 200,
+        'body': json.dumps({'message': 'Job deleted successfully'})
+    }
+    
+    logger.info(f"Response from {event.get('path')}: statusCode: {response_body['statusCode']}")
+    return response_body

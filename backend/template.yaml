@@ -14,11 +14,17 @@ Transform:
 
 Globals:
   Function:
+    Runtime: python3.12
+    Architectures:
+      - x86_64
+    MemorySize: 128
+    Timeout: 100
     LoggingConfig:
       LogFormat: JSON
     Environment:
       Variables:
         DYNAMODB_ENDPOINT: ''
+        DYNAMODB_TABLE: !Ref JobTable
 
 Resources:
   getAllJobsFunction:
@@ -31,19 +37,8 @@ Resources:
           Permissions:
             - Read
     Properties:
-      Handler: src/handlers/get-all-jobs.handler
-      Runtime: nodejs24.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
+      Handler: src.handlers.get_all_jobs.handler
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref JobTable
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Ref JobTable
       Events:
         Api:
           Type: Api
@@ -62,19 +57,8 @@ Resources:
           Permissions:
             - Read
     Properties:
-      Handler: src/handlers/get-by-id.handler
-      Runtime: nodejs24.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
+      Handler: src.handlers.get_by_id.handler
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref JobTable
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Ref JobTable
       Events:
         Api:
           Type: Api
@@ -93,19 +77,8 @@ Resources:
           Permissions:
             - Write
     Properties:
-      Handler: src/handlers/put-job.handler
-      Runtime: nodejs24.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
+      Handler: src.handlers.put_job.handler
       Description: A simple example includes a HTTP put method to add one job to a DynamoDB table.
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref JobTable
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Ref JobTable
       Events:
         Api:
           Type: Api
@@ -119,7 +92,7 @@ Resources:
               ValidateBody: true
               ValidateParameters: false
 
-  deleteById:
+  deleteByIdFunction:
     Type: AWS::Serverless::Function
     Connectors:
       GetItemsConnector:
@@ -127,21 +100,11 @@ Resources:
           Destination:
             Id: JobTable
           Permissions:
+            - Read
             - Write
     Properties:
-      Handler: src/handlers/delete-by-id.handler
-      Runtime: nodejs24.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
+      Handler: src.handlers.delete_by_id.handler
       Description: A function that handles job deletion.
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref JobTable
-      Environment:
-        Variables:
-          DYNAMODB_TABLE: !Ref JobTable
       Events:
         Api:
           Type: Api
