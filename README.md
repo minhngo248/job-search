@@ -54,6 +54,12 @@ npm run dev  # Starts dev server on port 5173
 3. **Integration**: Frontend connects to deployed backend API using API keys
 4. **Deployment**: Backend deploys to AWS via GitHub Actions, frontend deployment TBD
 
+## Monitoring
+
+- **CloudWatch Logs**: Lambda function execution logs and error tracking
+- **CloudWatch Metrics**: API Gateway request metrics and DynamoDB performance
+- **Automated Alerts**: Monitor job scraping failures and API response times
+
 ## Key Features
 
 - **REST API**: CRUD operations for job management with API key authentication

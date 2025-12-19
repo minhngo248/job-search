@@ -3,7 +3,7 @@
 ## Root Level
 ```
 ├── assets/            # Architecture diagrams and images
-├── backend/           # AWS SAM serverless backend (Node.js)
+├── backend/           # AWS SAM serverless backend (Python)
 ├── frontend/          # React SPA (TypeScript)
 ├── .kiro/             # Kiro configuration and specs
 └── README.md          # Project documentation
@@ -14,14 +14,17 @@
 backend/
 ├── src/
 │   └── handlers/      # Lambda function handlers
-│       ├── get-all-jobs.mjs    # Get all jobs API
-│       ├── get-by-id.mjs       # Get job by ID API
-│       ├── put-job.mjs         # Create/update job API
-│       └── delete-by-id.mjs    # Delete job API
+│       ├── get_all_jobs.py     # Get all jobs API
+│       ├── get_by_id.py        # Get job by ID API
+│       ├── put_job.py          # Create/update job API
+│       └── delete_by_id.py     # Delete job API
+├── tests/
+│   └── unit/
+│       └── handlers/  # Pytest unit tests
 ├── events/            # Test event files for local testing
-├── __tests__/         # Jest unit tests
 ├── template.yaml      # AWS SAM infrastructure template
-├── package.json       # Node.js dependencies
+├── pyproject.toml     # Python project configuration
+├── requirements.txt   # Python dependencies
 ├── samconfig.toml     # SAM deployment configuration
 └── README.md          # Backend documentation
 ```
@@ -60,8 +63,9 @@ backend/template.yaml  # AWS SAM infrastructure as code
 
 ### Lambda Functions
 - Each Lambda has its own handler in `src/handlers/`
-- ES6 modules with `.mjs` extension
+- Python modules with `.py` extension
 - Environment variables for resource names (e.g., `DYNAMODB_TABLE`)
+- Pydantic models for request/response validation
 
 ### API Structure
 - `GET /` - Get all jobs (requires API key)
@@ -75,9 +79,9 @@ backend/template.yaml  # AWS SAM infrastructure as code
 - No GSI indexes in current implementation
 
 ### File Naming
-- **JavaScript**: camelCase for functions, kebab-case for files
+- **Python**: snake_case for functions and files, PascalCase for classes
 - **TypeScript**: PascalCase for components, camelCase for utilities
-- **Tests**: Jest test files in `__tests__/` directory
+- **Tests**: pytest test files in `tests/unit/` directory with `test_` prefix
 
 ### Deployment
 - **Backend**: Deployed to AWS using SAM CLI via GitHub Actions
@@ -89,36 +93,36 @@ backend/template.yaml  # AWS SAM infrastructure as code
 ┌─────────────────┐    ┌──────────────────────────────────────────────────┐
 │                 │    │                 AWS Cloud                        │
 │  React Frontend │    │                                                  │
-│  (Port 5173)    │────┤  ┌─────────────────┐   ┌─────────────────────┐  │
-│  Local Dev      │    │  │   API Gateway   │   │    EventBridge      │  │
-│                 │    │  │  (API Key Auth) │   │   (Scheduler)       │  │
-└─────────────────┘    │  └─────────────────┘   │  6h, 14h, 22h       │  │
-                       │           │             └─────────────────────┘  │
+│  (Port 5173)    │────┤  ┌─────────────────┐   ┌─────────────────────┐   │
+│  Local Dev      │    │  │   API Gateway   │   │    EventBridge      │   │
+│                 │    │  │  (API Key Auth) │   │   (Scheduler)       │   │
+└─────────────────┘    │  └─────────────────┘   │  6h, 14h, 22h       │   │
+                       │           │            └─────────────────────┘   │
                        │           │                        │             │
-                       │  ┌─────────────────┐              │             │
-                       │  │ Lambda Functions│              │             │
-                       │  │                 │              │             │
-                       │  │ ┌─────────────┐ │              │             │
-                       │  │ │ GET /       │ │              │             │
-                       │  │ │ GET /{id}   │ │              │             │
-                       │  │ │ PUT /       │ │              │             │
-                       │  │ │ DELETE /{id}│ │              │             │
-                       │  │ └─────────────┘ │              │             │
-                       │  │                 │              │             │
-                       │  │ ┌─────────────┐ │              │             │
-                       │  │ │   Worker    │◄─────────────────┘             │
+                       │  ┌─────────────────┐               │             │
+                       │  │ Lambda Functions│               │             │
+                       │  │                 │               │             │
+                       │  │ ┌─────────────┐ │               │             │
+                       │  │ │ GET /       │ │               │             │
+                       │  │ │ GET /{id}   │ │               │             │
+                       │  │ │ PUT /       │ │               │             │
+                       │  │ │ DELETE /{id}│ │               │             │
+                       │  │ └─────────────┘ │               │             │
+                       │  │                 │               │             │
+                       │  │ ┌─────────────┐ │               │             │
+                       │  │ │   Worker    │◄────────────────┘             │
                        │  │ │ (Job Scraper│ │                             │
                        │  │ │  Function)  │ │                             │
                        │  │ └─────────────┘ │                             │
                        │  └─────────────────┘                             │
-                       │           │                                       │
-                       │           │                                       │
-                       │  ┌─────────────────┐                             │
-                       │  │   DynamoDB      │                             │
-                       │  │  (Jobs Table)   │                             │
-                       │  └─────────────────┘                             │
+                       │           │                                      │
+                       │           │                                      │
+                       │  ┌─────────────────┐   ┌─────────────────────┐   │
+                       │  │   DynamoDB      │   │    CloudWatch       │   │
+                       │  │  (Jobs Table)   │   │  (Logs & Metrics)   │   │
+                       │  └─────────────────┘   └─────────────────────┘   │
                        │                                                  │
-└──────────────────────────────────────────────────────────────────────────┘
+                       └──────────────────────────────────────────────────┘
 
 ┌─────────────────┐
 │  GitHub Actions │

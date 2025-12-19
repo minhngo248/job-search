@@ -21,6 +21,8 @@ digraph "Regulatory Jobs Application Architecture" {
 (Worker Function)" height=2.3 image="lambda.png" shape=none]
 		}
 		e9524e49387a40078e588c0aa629c4d4 [label="Jobs Table" height=1.9 image="dynamodb.png" shape=none]
+		cloudwatch_node [label="CloudWatch
+(Logs & Metrics)" height=2.3 image="cloudwatch.png" shape=none]
 	}
 	"54733f3045244ac4b58041e62af1bd01" [label="GitHub Actions
 (CI/CD)" height=2.3 image="github-actions-icon.png" shape=none]
@@ -36,4 +38,11 @@ digraph "Regulatory Jobs Application Architecture" {
 	"6ed4afcdc0b043c3abbb0e725a51b37f" -> e9524e49387a40078e588c0aa629c4d4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
 	eventbridge_scheduler -> worker_function [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
 	worker_function -> e9524e49387a40078e588c0aa629c4d4 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2fa42b166cc34f0c9debee1a5395a799" -> cloudwatch_node [dir=forward fontcolor="#FF8C00" fontname="Sans-Serif" fontsize=13 style=dotted]
+	"83f32e8587a444219a7beb444151eaf4" -> cloudwatch_node [dir=forward fontcolor="#FF8C00" fontname="Sans-Serif" fontsize=13 style=dotted]
+	e10a36b65fe0437ca81bc479dd0212f4 -> cloudwatch_node [dir=forward fontcolor="#FF8C00" fontname="Sans-Serif" fontsize=13 style=dotted]
+	"6ed4afcdc0b043c3abbb0e725a51b37f" -> cloudwatch_node [dir=forward fontcolor="#FF8C00" fontname="Sans-Serif" fontsize=13 style=dotted]
+	worker_function -> cloudwatch_node [dir=forward fontcolor="#FF8C00" fontname="Sans-Serif" fontsize=13 style=dotted]
+	cbc59ce4140b4bfa835ba426ff6aea34 -> cloudwatch_node [dir=forward fontcolor="#FF8C00" fontname="Sans-Serif" fontsize=13 style=dotted]
+	e9524e49387a40078e588c0aa629c4d4 -> cloudwatch_node [dir=forward fontcolor="#FF8C00" fontname="Sans-Serif" fontsize=13 style=dotted]
 }
