@@ -350,9 +350,14 @@
 
 /* Desktop: Always show filters expanded */
 @media (min-width: 1024px) {
+  .job-filters {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Enhanced shadow for desktop */
+    border: 1px solid #e1e5e9;
+  }
+  
   .filters-content {
     max-height: none;
-    padding: 20px;
+    padding: 24px; /* Increased padding for desktop */
   }
   
   .toggle-filters {
@@ -361,6 +366,27 @@
   
   .filters-header {
     cursor: default;
+    padding: 20px 24px; /* Increased padding for desktop */
+  }
+  
+  .filters-header h3 {
+    font-size: 18px; /* Larger heading on desktop */
+  }
+  
+  .filter-group {
+    margin-bottom: 24px; /* Increased spacing on desktop */
+  }
+  
+  .filter-input,
+  .filter-select {
+    padding: 12px 14px; /* Increased padding for desktop */
+    font-size: 15px; /* Slightly larger text on desktop */
+  }
+  
+  .apply-filters-btn,
+  .clear-filters-btn {
+    padding: 12px 24px; /* Increased padding for desktop */
+    font-size: 15px; /* Slightly larger text on desktop */
   }
 }
 /* High contrast mode support */

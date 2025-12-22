@@ -27,6 +27,17 @@
   grid-template-columns: repeat(var(--grid-columns-mobile), 1fr);
   gap: var(--grid-gap-mobile);
   width: 100%;
+  transition: gap 0.3s ease; /* Smooth transition for gap changes */
+  /* Performance optimizations */
+  contain: layout style paint;
+  will-change: auto; /* Let browser decide what to optimize */
+}
+
+/* Smooth transitions for grid items */
+.job-list > div {
+  transition: all 0.3s ease;
+  /* Performance optimizations */
+  contain: layout style;
 }
 
 /* Responsive grid layout with dynamic columns */
@@ -34,6 +45,7 @@
   .job-list {
     grid-template-columns: repeat(var(--grid-columns-tablet), 1fr);
     gap: var(--grid-gap-tablet);
+    transition: all 0.3s ease; /* Smooth transition for layout changes */
   }
 }
 
@@ -41,6 +53,7 @@
   .job-list {
     grid-template-columns: repeat(var(--grid-columns-desktop), 1fr);
     gap: var(--grid-gap-desktop);
+    transition: all 0.3s ease; /* Smooth transition for layout changes */
   }
 }
 
@@ -48,6 +61,7 @@
   .job-list {
     grid-template-columns: repeat(var(--grid-columns-desktop-large), 1fr);
     gap: var(--grid-gap-large);
+    transition: all 0.3s ease; /* Smooth transition for layout changes */
   }
 }
 
@@ -55,10 +69,126 @@
   .job-list {
     grid-template-columns: repeat(var(--grid-columns-ultra-wide), 1fr);
     gap: var(--grid-gap-large);
+    transition: all 0.3s ease; /* Smooth transition for layout changes */
   }
 }
 
-/* Loading state */
+/* Performance optimizations */
+.job-list {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns-mobile), 1fr);
+  gap: var(--grid-gap-mobile);
+  width: 100%;
+  transition: gap 0.3s ease; /* Smooth transition for gap changes */
+  /* Performance optimizations */
+  contain: layout style paint;
+  will-change: auto; /* Let browser decide what to optimize */
+}
+
+/* Smooth transitions for grid items */
+.job-list > div {
+  transition: all 0.3s ease;
+  /* Performance optimizations */
+  contain: layout style;
+}
+.skeleton-loading {
+  opacity: 0.8;
+}
+
+.skeleton-header-title {
+  height: 32px;
+  width: 300px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-header-count {
+  height: 18px;
+  width: 200px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Virtual scrolling optimizations */
+.job-list.virtual-scrolling {
+  contain: layout style paint; /* CSS containment for better performance */
+  will-change: transform; /* Hint to browser for optimization */
+}
+
+.job-list.virtual-scrolling > div {
+  contain: layout style paint;
+}
+
+/* Keyboard navigation styles */
+.job-list.keyboard-navigation {
+  outline: none;
+}
+
+.job-list.keyboard-navigation:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.job-list .keyboard-focused {
+  position: relative;
+}
+
+.job-list .keyboard-focused::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid #0066cc;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.keyboard-help {
+  margin-top: 16px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  text-align: center;
+  color: #4a5568;
+}
+
+.keyboard-help small {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.performance-indicator {
+  text-align: center;
+  padding: 12px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  margin-top: 16px;
+  color: #0369a1;
+}
+
+.performance-indicator small {
+  font-size: 12px;
+  font-weight: 500;
+}
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -229,6 +359,25 @@
     font-size: 20px;
   }
   
+  .skeleton-header-title {
+    height: 28px;
+    width: 250px;
+  }
+  
+  .skeleton-header-count {
+    height: 16px;
+    width: 180px;
+  }
+  
+  .keyboard-help {
+    margin-top: 12px;
+    padding: 6px 10px;
+  }
+  
+  .keyboard-help small {
+    font-size: 11px;
+  }
+  
   .loading-state,
   .error-state,
   .empty-state {
@@ -250,6 +399,11 @@
   .loading-state p {
     font-size: 14px;
   }
+  
+  .performance-indicator {
+    margin-top: 12px;
+    padding: 8px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -264,6 +418,25 @@
   
   .showing-count {
     font-size: 13px;
+  }
+  
+  .skeleton-header-title {
+    height: 24px;
+    width: 200px;
+  }
+  
+  .skeleton-header-count {
+    height: 14px;
+    width: 150px;
+  }
+  
+  .keyboard-help {
+    margin-top: 8px;
+    padding: 4px 8px;
+  }
+  
+  .keyboard-help small {
+    font-size: 10px;
   }
   
   .loading-state,
@@ -291,6 +464,15 @@
   .load-more-section {
     padding: 24px 0;
   }
+  
+  .performance-indicator {
+    margin-top: 8px;
+    padding: 6px;
+  }
+  
+  .performance-indicator small {
+    font-size: 11px;
+  }
 }
 
 /* Touch-friendly interactions */
@@ -316,6 +498,18 @@
   .load-more-button {
     border: 2px solid #0066cc;
   }
+  
+  .job-list.keyboard-navigation:focus {
+    outline: 3px solid #000;
+  }
+  
+  .job-list .keyboard-focused::before {
+    border: 3px solid #000;
+  }
+  
+  .keyboard-help {
+    border: 2px solid #000;
+  }
 }
 
 /* Reduced motion support */
@@ -331,5 +525,16 @@
   
   .load-more-button:hover:not(:disabled) {
     transform: none;
+  }
+  
+  .job-list,
+  .job-list > div {
+    transition: none; /* Disable smooth transitions for users who prefer reduced motion */
+  }
+  
+  .skeleton-header-title,
+  .skeleton-header-count {
+    animation: none;
+    background: #f0f0f0;
   }
 }
