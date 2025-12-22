@@ -21,8 +21,8 @@ stack_name = "job-backend"
 s3_prefix = "job-backend"
 region = "eu-west-3"
 parameter_overrides = [
-    "AdzunaAppId=$ADZUNA_APP_ID",
-    "AdzunaAppKey=$ADZUNA_APP_KEY"
+    "AdzunaAppId=PLACEHOLDER",
+    "AdzunaAppKey=PLACEHOLDER"
 ]
 image_repositories = []
 

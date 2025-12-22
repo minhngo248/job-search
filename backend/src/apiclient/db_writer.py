@@ -20,7 +20,10 @@ class DynamoDBBatchWriter:
     def _initialize_client(self):
         """Initialize DynamoDB client and table resource."""
         try:
-            self.dynamodb = boto3.resource('dynamodb', endpoint_url=self.endpoint_url)
+            if self.endpoint_url:
+                self.dynamodb = boto3.resource('dynamodb', endpoint_url=self.endpoint_url)
+            else:
+                self.dynamodb = boto3.resource('dynamodb')
             self.table = self.dynamodb.Table(self.table_name)
             logger.info(f"[db_writer] Initialized DynamoDB client for table: {self.table_name}")
         except Exception as e:

@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from typing import Any, Dict
+from src.utils.response import cors_response
 
 import boto3
 from botocore.exceptions import ClientError
@@ -56,15 +57,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
     except ClientError as e:
         logger.error(f"Error scanning table: {e}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': 'Failed to retrieve items'})
-        }
+        return cors_response(500, json.dumps({'error': 'Failed to retrieve items'}))
     
-    response_body = {
-        'statusCode': 200,
-        'body': json.dumps(items, default=str)  # default=str handles datetime serialization
-    }
+    response_body = cors_response(200, json.dumps(items, default=str))
     
     logger.info(f"Response from {event.get('path')}: statusCode: {response_body['statusCode']}")
     return response_body

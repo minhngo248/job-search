@@ -54,7 +54,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /
+            Path: /jobs
             Method: GET
 
   getByIdFunction:
@@ -74,7 +74,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /{id}
+            Path: /jobs/{id}
             Method: GET
 
   putJobFunction:
@@ -94,7 +94,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /
+            Path: /jobs
             Method: PUT
             RequestModel:
               Model: JobModel
@@ -120,19 +120,46 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /{id}
+            Path: /jobs/{id}
             Method: DELETE
+
+  optionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      InlineCode: |
+        import json
+        def handler(event, context):
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-api-key',
+                    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+                    'Access-Control-Max-Age': '600'
+                },
+                'body': ''
+            }
+      Events:
+        JobsOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /jobs
+            Method: OPTIONS
+            Auth:
+              ApiKeyRequired: false
+        JobsByIdOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /jobs/{id}
+            Method: OPTIONS
+            Auth:
+              ApiKeyRequired: false
 
   apiWorkerFunction:
     Type: AWS::Serverless::Function
-    Connectors:
-      GetItemsConnector:
-        Properties:
-          Destination:
-            Id: JobTable
-          Permissions:
-            - Read
-            - Write
     Properties:
       Handler: src.apiclient.lambda_handler.handler
       Description: A function that handles scheduled item creation
@@ -143,17 +170,22 @@ Resources:
       MemorySize: 512
       Timeout: 600
       LoggingConfig: {}
+      Policies:
+        # Full CRUD access (includes BatchWrite)
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobTable
       Events:
         DailySchedule:
           Type: ScheduleV2
           Properties:
-            ScheduleExpression: "cron(0 6,18 * * ? *)"  # Both 7 AM and 7 PM
+            ScheduleExpression: "cron(0 7,19 * * ? *)"  # Both 7 AM and 7 PM
             Input: '{"endpoint_url": ""}'
             Description: "Job scraping twice daily"
 
   JobTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
+      TableName: JobTable
       PrimaryKey:
         Name: id
         Type: String
