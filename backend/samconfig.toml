@@ -20,6 +20,10 @@ resolve_s3 = true
 stack_name = "job-backend"
 s3_prefix = "job-backend"
 region = "eu-west-3"
+parameter_overrides = [
+    "AdzunaAppId=$ADZUNA_APP_ID",
+    "AdzunaAppKey=$ADZUNA_APP_KEY"
+]
 image_repositories = []
 
 [default.package.parameters]

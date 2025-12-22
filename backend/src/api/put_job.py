@@ -11,7 +11,9 @@ from typing import Any, Dict, Optional
 
 import boto3
 from botocore.exceptions import ClientError
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+
+from src.shared.models import JobModel
 
 # Configure logging
 logger = logging.getLogger()
@@ -26,18 +28,6 @@ if dynamodb_endpoint:
 else:
     # Use AWS DynamoDB
     dynamodb = boto3.resource('dynamodb')
-
-
-class JobModel(BaseModel):
-    """Pydantic model for job validation."""
-    job_title: str
-    company_name: str
-    link: str
-    source: str
-    year_of_experience: int
-    published_date: str
-    description: Optional[str] = None
-    salary_range: Optional[float] = None
 
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
