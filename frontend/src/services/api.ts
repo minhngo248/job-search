@@ -5,7 +5,7 @@
 import { apiGatewayUrl, apiKey } from '../config';
 
 export interface JobRecord {
-  job_id: string;
+  id: string;
   job_title: string;
   company_name: string;
   city: string;
@@ -17,6 +17,10 @@ export interface JobRecord {
   salary_range?: string;
   created_at: string;
   updated_at: string;
+  // Enhanced display fields for responsive desktop layout
+  company_logo_url?: string;
+  tags?: string[];
+  is_featured?: boolean;
 }
 
 export interface JobsResponse {
@@ -66,7 +70,7 @@ class ApiClient {
     
     const headers = {
       'Content-Type': 'application/json',
-      'X-API-Key': this.apiKey,
+      'X-Api-Key': this.apiKey,
       ...options.headers,
     };
 
@@ -127,7 +131,33 @@ class ApiClient {
     const queryString = searchParams.toString();
     const endpoint = `/jobs${queryString ? `?${queryString}` : ''}`;
     
-    return this.request<JobsResponse>(endpoint);
+    // Backend returns array directly, need to transform to expected format
+    const rawJobs = await this.request<any[]>(endpoint);
+    
+    // Transform backend response to match frontend interface
+    const jobs: JobRecord[] = rawJobs.map(item => ({
+      id: item.id || '',
+      job_title: item.job_title || '',
+      company_name: item.company_name || '',
+      city: item.city || 'Non spécifié',
+      year_of_experience: parseInt(item.year_of_experience) || 0,
+      published_date: item.published_date || '',
+      link: item.link || '',
+      source: item.source || '',
+      description: item.description || '',
+      salary_range: item.salary_range || '',
+      created_at: item.created_at || '',
+      updated_at: item.updated_at || '',
+      company_logo_url: item.company_logo_url,
+      tags: item.tags || [],
+      is_featured: item.is_featured || false
+    }));
+
+    return {
+      jobs,
+      total_count: jobs.length,
+      filters_applied: filters
+    };
   }
 }
 

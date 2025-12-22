@@ -56,7 +56,7 @@ The application validates all required environment variables on startup. If any 
 ### API Integration
 
 The application uses a custom API client (`src/services/api.ts`) that:
-- Authenticates requests using the X-API-Key header
+- Authenticates requests using the X-Api-Key header
 - Handles errors gracefully with custom error types
 - Provides TypeScript interfaces for all API responses
 - Supports job filtering by date, experience, and city
