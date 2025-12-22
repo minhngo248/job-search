@@ -7,7 +7,7 @@ import type { JobRecord } from '../../services/api'
 
 describe('Integration Tests - Responsive Breakpoints', () => {
   const mockJobs: JobRecord[] = Array.from({ length: 8 }, (_, i) => ({
-    job_id: `job-${i + 1}`,
+    id: `job-${i + 1}`,
     job_title: `Job Title ${i + 1}`,
     company_name: `Company ${i + 1}`,
     city: 'Paris, Île-de-France',

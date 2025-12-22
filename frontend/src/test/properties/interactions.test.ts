@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, cleanup, screen, fireEvent } from '@testing-library/react'
+import { render, cleanup, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { JobList } from '../../components/JobList'
@@ -8,7 +8,7 @@ import type { JobRecord } from '../../services/api'
 
 describe('Property Tests - Interactive Features', () => {
   const mockJobs: JobRecord[] = Array.from({ length: 6 }, (_, i) => ({
-    job_id: `job-${i + 1}`,
+    id: `job-${i + 1}`,
     job_title: `Job Title ${i + 1}`,
     company_name: `Company ${i + 1}`,
     city: 'Paris, Île-de-France',
@@ -66,7 +66,6 @@ describe('Property Tests - Interactive Features', () => {
   })
 
   it('Property 13: Real-time filter updates - should update results without page refresh', async () => {
-    const user = userEvent.setup()
     render(React.createElement(JobListHeader, mockProps))
     
     // Test search functionality - JobListHeader doesn't have search in current implementation

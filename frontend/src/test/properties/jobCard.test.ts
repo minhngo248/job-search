@@ -6,7 +6,7 @@ import type { JobRecord } from '../../services/api'
 
 describe('Property Tests - Job Card Display', () => {
   const mockJob: JobRecord = {
-    job_id: 'test-job-1',
+    id: 'test-job-1',
     job_title: 'Senior Regulatory Affairs Specialist',
     company_name: 'MedTech Solutions',
     city: 'Paris, Île-de-France',
@@ -60,14 +60,14 @@ describe('Property Tests - Job Card Display', () => {
 
   it('Property 7: Consistent card height alignment - cards should maintain consistent heights', () => {
     const jobs = [
-      { ...mockJob, job_id: '1', description: 'Short description' },
-      { ...mockJob, job_id: '2', description: 'This is a much longer description that spans multiple lines and contains detailed information about the position' },
-      { ...mockJob, job_id: '3', description: 'Medium length description with some details' }
+      { ...mockJob, id: '1', description: 'Short description' },
+      { ...mockJob, id: '2', description: 'This is a much longer description that spans multiple lines and contains detailed information about the position' },
+      { ...mockJob, id: '3', description: 'Medium length description with some details' }
     ]
 
     const { container } = render(
       React.createElement('div', {}, 
-        jobs.map(job => React.createElement(JobCard, { key: job.job_id, job }))
+        jobs.map(job => React.createElement(JobCard, { key: job.id, job }))
       )
     )
 
@@ -121,7 +121,6 @@ describe('Property Tests - Job Card Display', () => {
 
     // Test job with logo
     const { rerender } = render(React.createElement(JobCard, { job: jobWithLogo }))
-    const logoImg = screen.queryByRole('img', { name: /logo/i })
     // Logo might be implemented as background image or img tag
     // This test verifies the structure supports logo display
 

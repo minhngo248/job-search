@@ -8,7 +8,7 @@ describe('Property Tests - Performance Optimization', () => {
   // Generate large dataset for performance testing
   const generateMockJobs = (count: number): JobRecord[] => 
     Array.from({ length: count }, (_, i) => ({
-      job_id: `job-${i + 1}`,
+      id: `job-${i + 1}`,
       job_title: `Job Title ${i + 1}`,
       company_name: `Company ${i + 1}`,
       city: 'Paris, Île-de-France',
@@ -25,8 +25,8 @@ describe('Property Tests - Performance Optimization', () => {
 
   beforeEach(() => {
     // Mock performance APIs
-    global.performance = {
-      ...global.performance,
+    ;(globalThis as any).performance = {
+      ...(globalThis as any).performance,
       now: vi.fn(() => Date.now()),
       mark: vi.fn(),
       measure: vi.fn(),

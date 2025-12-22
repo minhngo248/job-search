@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { render, cleanup } from '@testing-library/react'
-import { BREAKPOINT_TESTS, getExpectedBehavior } from '../../utils/responsiveTest'
+import { cleanup } from '@testing-library/react'
+import { getExpectedBehavior } from '../../utils/responsiveTest'
 
 describe('Property Tests - Viewport Width Utilization', () => {
   beforeEach(() => {

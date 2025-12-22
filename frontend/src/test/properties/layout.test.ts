@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { render, cleanup, screen } from '@testing-library/react'
+import { render, cleanup } from '@testing-library/react'
 import React from 'react'
 import { JobList } from '../../components/JobList'
 import type { JobRecord } from '../../services/api'
 
 describe('Property Tests - Layout and Grid System', () => {
   const mockJobs: JobRecord[] = Array.from({ length: 12 }, (_, i) => ({
-    job_id: `job-${i + 1}`,
+    id: `job-${i + 1}`,
     job_title: `Job Title ${i + 1}`,
     company_name: `Company ${i + 1}`,
     city: 'Paris, Île-de-France',
@@ -53,7 +53,6 @@ describe('Property Tests - Layout and Grid System', () => {
     
     // Verify grid layout properties are applied
     if (jobListElement) {
-      const computedStyle = window.getComputedStyle(jobListElement)
       // In a real test, we'd check for grid-template-columns or similar
       expect(jobListElement).toHaveClass('job-list')
     }
