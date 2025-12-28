@@ -8,10 +8,13 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, Optional
+from src.utils.response import cors_response
 
 import boto3
 from botocore.exceptions import ClientError
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+
+from src.shared.models import JobModel
 
 # Configure logging
 logger = logging.getLogger()
@@ -26,18 +29,6 @@ if dynamodb_endpoint:
 else:
     # Use AWS DynamoDB
     dynamodb = boto3.resource('dynamodb')
-
-
-class JobModel(BaseModel):
-    """Pydantic model for job validation."""
-    job_title: str
-    company_name: str
-    link: str
-    source: str
-    year_of_experience: int
-    published_date: str
-    description: Optional[str] = None
-    salary_range: Optional[float] = None
 
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -67,20 +58,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         body = json.loads(event.get('body', '{}'))
     except json.JSONDecodeError:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'error': 'Invalid JSON in request body'})
-        }
+        return cors_response(400, {'error': 'Invalid JSON in request body'})
     
     # Validate request body using Pydantic
     try:
         job_data = JobModel(**body)
     except ValidationError as e:
         logger.error(f"Validation error: {e}")
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'error': 'Invalid request data', 'details': e.errors()})
-        }
+        return cors_response(400, {'error': 'Invalid request data', 'details': e.errors()})
     
     # Generate UUID for the job and current timestamp
     job_id = str(uuid.uuid4())
@@ -112,15 +97,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
     except ClientError as e:
         logger.error(f"Error putting item: {e}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': 'Failed to create/update job'})
-        }
+        return cors_response(500, {'error': 'Failed to create/update job'})
     
-    response_body = {
-        'statusCode': 200,
-        'body': json.dumps({**body, 'id': job_id, 'created_at': now, 'updated_at': now})
-    }
+    response_body = cors_response(200, json.dumps({**body, 'id': job_id, 'created_at': now, 'updated_at': now}))
     
     logger.info(f"Response from {event.get('path')}: statusCode: {response_body['statusCode']}")
     return response_body

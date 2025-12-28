@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from typing import Any, Dict
+from src.utils.response import cors_response
 
 import boto3
 from botocore.exceptions import ClientError
@@ -50,19 +51,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Get id from pathParameters from API Gateway
     path_parameters = event.get('pathParameters', {})
     if not path_parameters or 'id' not in path_parameters:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'error': 'Missing required parameter: id'})
-        }
+        return cors_response(400, json.dumps({'error': 'Missing required parameter: id'}))
     
     job_id = path_parameters['id']
     
     # Validate that ID is not empty (DynamoDB doesn't allow empty string keys)
     if not job_id or job_id.strip() == '':
-        return {
-            'statusCode': 404,
-            'body': json.dumps({'error': 'Job not found'})
-        }
+        return cors_response(404, json.dumps({'error': 'Job not found'}))
     
     try:
         # Get the item from the table
@@ -70,24 +65,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         item = response.get('Item')
         
         if not item:
-            return {
-                'statusCode': 404,
-                'body': json.dumps({'error': 'Job not found'})
-            }
+            return cors_response(404, json.dumps({'error': 'Job not found'}))
         
         logger.info(f"Retrieved item with id: {job_id}")
         
     except ClientError as e:
         logger.error(f"Error getting item: {e}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': 'Failed to retrieve item'})
-        }
+        return cors_response(500, json.dumps({'error': 'Failed to retrieve item'}))
     
-    response_body = {
-        'statusCode': 200,
-        'body': json.dumps(item, default=str)  # default=str handles datetime serialization
-    }
+    response_body = cors_response(200, json.dumps(item, default=str))
     
     logger.info(f"Response from {event.get('path')}: statusCode: {response_body['statusCode']}")
     return response_body

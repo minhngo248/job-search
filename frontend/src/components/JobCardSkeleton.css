@@ -1,0 +1,311 @@
+.job-card-skeleton {
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.skeleton-title-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-title {
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  width: 80%;
+}
+
+.skeleton-salary {
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  width: 60%;
+}
+
+.skeleton-source {
+  height: 20px;
+  width: 60px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.skeleton-company-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.skeleton-logo {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.skeleton-company-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.skeleton-company-name {
+  height: 18px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  width: 70%;
+}
+
+.skeleton-location {
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  width: 50%;
+}
+
+.skeleton-job-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skeleton-experience {
+  height: 16px;
+  width: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-date {
+  height: 16px;
+  width: 100px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-description {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  flex: 1;
+}
+
+.skeleton-text-line {
+  height: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.skeleton-text-line.short {
+  width: 75%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Desktop responsive enhancements */
+@media (min-width: 1024px) {
+  .job-card-skeleton {
+    padding: 24px;
+    min-height: 320px;
+  }
+  
+  .skeleton-title {
+    height: 26px;
+  }
+  
+  .skeleton-salary {
+    height: 22px;
+  }
+  
+  .skeleton-logo {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .skeleton-company-name {
+    height: 20px;
+  }
+  
+  .skeleton-location {
+    height: 18px;
+  }
+  
+  .skeleton-text-line {
+    height: 16px;
+  }
+}
+
+/* Large desktop enhancements */
+@media (min-width: 1440px) {
+  .job-card-skeleton {
+    padding: 28px;
+    min-height: 340px;
+  }
+  
+  .skeleton-title {
+    height: 28px;
+  }
+  
+  .skeleton-logo {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Ultra-wide desktop enhancements */
+@media (min-width: 1920px) {
+  .job-card-skeleton {
+    padding: 32px;
+    min-height: 360px;
+  }
+  
+  .skeleton-title {
+    height: 30px;
+  }
+  
+  .skeleton-logo {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .job-card-skeleton {
+    padding: 16px;
+  }
+  
+  .skeleton-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .skeleton-title-section {
+    width: 100%;
+  }
+  
+  .skeleton-title {
+    height: 20px;
+  }
+  
+  .skeleton-salary {
+    height: 18px;
+  }
+  
+  .skeleton-company-section {
+    gap: 10px;
+  }
+  
+  .skeleton-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .skeleton-job-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .job-card-skeleton {
+    padding: 12px;
+  }
+  
+  .skeleton-title {
+    height: 18px;
+  }
+  
+  .skeleton-logo {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .skeleton-text-line {
+    height: 12px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .job-card-skeleton {
+    animation: none;
+  }
+  
+  .skeleton-title,
+  .skeleton-salary,
+  .skeleton-source,
+  .skeleton-logo,
+  .skeleton-company-name,
+  .skeleton-location,
+  .skeleton-experience,
+  .skeleton-date,
+  .skeleton-text-line {
+    animation: none;
+    background: #f0f0f0;
+  }
+}

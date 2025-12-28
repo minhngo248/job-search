@@ -3,6 +3,13 @@ import './App.css'
 import { JobFilters, JobList } from './components'
 import { useJobs } from './hooks'
 
+// Import test utilities for development
+if (import.meta.env.DEV) {
+  import('./utils/responsiveTest');
+  import('./utils/touchTest');
+  import('./utils/performanceMonitor');
+}
+
 interface AppConfig {
   appName: string;
   appVersion: string;

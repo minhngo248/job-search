@@ -1,33 +1,95 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { JobRecord } from '../services/api';
 import { JobCard } from './JobCard';
+import { JobCardSkeleton } from './JobCardSkeleton';
+import { JobListHeader, type SortOption } from './JobListHeader';
+import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import './JobList.css';
 
 interface JobListProps {
-  jobs: JobRecord[];
+  jobs?: JobRecord[];
   loading: boolean;
   error: string | null;
   totalCount: number;
   onLoadMore?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
+  enableVirtualScrolling?: boolean; // New prop for virtual scrolling
+  sortBy?: SortOption;
+  onSortChange?: (sortBy: SortOption) => void;
+  enableKeyboardNavigation?: boolean;
 }
 
 export const JobList: React.FC<JobListProps> = ({
-  jobs,
+  jobs = [],
   loading,
   error,
   totalCount,
   onLoadMore,
   hasMore = false,
-  loadingMore = false
+  loadingMore = false,
+  enableVirtualScrolling = false,
+  sortBy = 'date_desc',
+  onSortChange,
+  enableKeyboardNavigation = true
 }) => {
-  if (loading && jobs.length === 0) {
+  // Ensure jobs is always an array
+  const safeJobs = jobs || [];
+  
+  // Determine if we should use virtual scrolling (for 1000+ jobs)
+  const shouldUseVirtualScrolling = enableVirtualScrolling && safeJobs.length >= 1000;
+  
+  // Calculate grid columns based on viewport (simplified for now)
+  const gridColumns = useMemo(() => {
+    if (typeof window === 'undefined') return 1;
+    const width = window.innerWidth;
+    if (width >= 1920) return 5;
+    if (width >= 1440) return 4;
+    if (width >= 1024) return 3;
+    if (width >= 768) return 2;
+    return 1;
+  }, []);
+  
+  // Keyboard navigation
+  const { containerRef, currentIndex } = useKeyboardNavigation({
+    itemCount: safeJobs.length,
+    enabled: enableKeyboardNavigation && safeJobs.length > 0,
+    gridColumns,
+    onItemActivate: (index) => {
+      // Open job link when Enter or Space is pressed
+      const job = safeJobs[index];
+      if (job) {
+        window.open(job.link, '_blank', 'noopener,noreferrer');
+      }
+    }
+  });
+  
+  // Generate skeleton items for loading state
+  const skeletonItems = useMemo(() => {
+    const count = loading && safeJobs.length === 0 ? 6 : 3; // Show 6 skeletons on initial load, 3 for load more
+    return Array.from({ length: count }, (_, index) => (
+      <div key={`skeleton-${index}`} role="listitem">
+        <JobCardSkeleton />
+      </div>
+    ));
+  }, [loading, safeJobs.length]);
+
+  if (loading && safeJobs.length === 0) {
     return (
       <div className="job-list-container">
-        <div className="loading-state" role="status" aria-live="polite">
-          <div className="loading-spinner" aria-hidden="true"></div>
-          <p>Chargement des offres d'emploi...</p>
+        <JobListHeader
+          totalCount={0}
+          displayedCount={0}
+          sortBy={sortBy}
+          onSortChange={onSortChange || (() => {})}
+          loading={true}
+        />
+        <div 
+          className="job-list skeleton-loading" 
+          role="list" 
+          aria-label="Chargement des offres d'emploi"
+        >
+          {skeletonItems}
         </div>
       </div>
     );
@@ -52,7 +114,7 @@ export const JobList: React.FC<JobListProps> = ({
     );
   }
 
-  if (jobs.length === 0) {
+  if (safeJobs.length === 0) {
     return (
       <div className="job-list-container">
         <div className="empty-state" role="status">
@@ -67,28 +129,34 @@ export const JobList: React.FC<JobListProps> = ({
 
   return (
     <div className="job-list-container">
-      <div className="job-list-header">
-        <h2 id="job-count-heading">
-          {totalCount} offre{totalCount > 1 ? 's' : ''} d'emploi trouvée{totalCount > 1 ? 's' : ''}
-        </h2>
-        {jobs.length < totalCount && (
-          <p className="showing-count" aria-describedby="job-count-heading">
-            Affichage de {jobs.length} sur {totalCount} offres
-          </p>
-        )}
-      </div>
+      <JobListHeader
+        totalCount={totalCount}
+        displayedCount={safeJobs.length}
+        sortBy={sortBy}
+        onSortChange={onSortChange || (() => {})}
+        loading={loading}
+      />
 
       <div 
-        className="job-list" 
+        ref={containerRef}
+        className={`job-list ${shouldUseVirtualScrolling ? 'virtual-scrolling' : ''} ${enableKeyboardNavigation ? 'keyboard-navigation' : ''}`}
         role="list" 
-        aria-label={`Liste de ${jobs.length} offres d'emploi`}
+        aria-label={`Liste de ${safeJobs.length} offres d'emploi`}
         aria-describedby="job-count-heading"
+        tabIndex={enableKeyboardNavigation ? 0 : -1}
       >
-        {jobs.map((job) => (
-          <div key={job.job_id} role="listitem">
+        {safeJobs.map((job, index) => (
+          <div 
+            key={job.id} 
+            role="listitem"
+            className={enableKeyboardNavigation && index === currentIndex ? 'keyboard-focused' : ''}
+          >
             <JobCard job={job} />
           </div>
         ))}
+        
+        {/* Show skeleton loading items while loading more */}
+        {loadingMore && skeletonItems}
       </div>
 
       {hasMore && onLoadMore && (
@@ -108,6 +176,23 @@ export const JobList: React.FC<JobListProps> = ({
               'Charger plus d\'offres'
             )}
           </button>
+        </div>
+      )}
+      
+      {/* Performance indicator for large datasets */}
+      {shouldUseVirtualScrolling && (
+        <div className="performance-indicator" role="status" aria-live="polite">
+          <small>Mode haute performance activé pour {safeJobs.length} offres</small>
+        </div>
+      )}
+      
+      {/* Keyboard navigation help */}
+      {enableKeyboardNavigation && safeJobs.length > 0 && (
+        <div className="keyboard-help" role="region" aria-label="Aide navigation clavier">
+          <small>
+            Navigation: ↑↓ pour naviguer, Entrée pour ouvrir, Home/End pour aller au début/fin
+            {gridColumns > 1 && ', ←→ pour naviguer horizontalement'}
+          </small>
         </div>
       )}
     </div>

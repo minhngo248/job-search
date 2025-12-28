@@ -12,6 +12,16 @@ Description: >-
 Transform:
 - AWS::Serverless-2016-10-31
 
+Parameters:
+  AdzunaAppId:
+    Type: String
+    Description: Adzuna API App ID
+    NoEcho: true
+  AdzunaAppKey:
+    Type: String
+    Description: Adzuna API App Key
+    NoEcho: true
+  
 Globals:
   Function:
     Runtime: python3.12
@@ -37,14 +47,14 @@ Resources:
           Permissions:
             - Read
     Properties:
-      Handler: src.handlers.get_all_jobs.handler
+      Handler: src.api.get_all_jobs.handler
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
       Events:
         Api:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /
+            Path: /jobs
             Method: GET
 
   getByIdFunction:
@@ -57,14 +67,14 @@ Resources:
           Permissions:
             - Read
     Properties:
-      Handler: src.handlers.get_by_id.handler
+      Handler: src.api.get_by_id.handler
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
       Events:
         Api:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /{id}
+            Path: /jobs/{id}
             Method: GET
 
   putJobFunction:
@@ -77,14 +87,14 @@ Resources:
           Permissions:
             - Write
     Properties:
-      Handler: src.handlers.put_job.handler
+      Handler: src.api.put_job.handler
       Description: A simple example includes a HTTP put method to add one job to a DynamoDB table.
       Events:
         Api:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /
+            Path: /jobs
             Method: PUT
             RequestModel:
               Model: JobModel
@@ -103,19 +113,79 @@ Resources:
             - Read
             - Write
     Properties:
-      Handler: src.handlers.delete_by_id.handler
+      Handler: src.api.delete_by_id.handler
       Description: A function that handles job deletion.
       Events:
         Api:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /{id}
+            Path: /jobs/{id}
             Method: DELETE
+
+  optionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      InlineCode: |
+        import json
+        def handler(event, context):
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-api-key',
+                    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+                    'Access-Control-Max-Age': '600'
+                },
+                'body': ''
+            }
+      Events:
+        JobsOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /jobs
+            Method: OPTIONS
+            Auth:
+              ApiKeyRequired: false
+        JobsByIdOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /jobs/{id}
+            Method: OPTIONS
+            Auth:
+              ApiKeyRequired: false
+
+  apiWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.apiclient.lambda_handler.handler
+      Description: A function that handles scheduled item creation
+      Environment:
+        Variables:
+          ADZUNA_APP_ID: !Ref AdzunaAppId
+          ADZUNA_APP_KEY: !Ref AdzunaAppKey
+      MemorySize: 512
+      Timeout: 600
+      LoggingConfig: {}
+      Policies:
+        # Full CRUD access (includes BatchWrite)
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobTable
+      Events:
+        DailySchedule:
+          Type: ScheduleV2
+          Properties:
+            ScheduleExpression: "cron(0 7,19 * * ? *)"  # Both 7 AM and 7 PM
+            Input: '{"endpoint_url": ""}'
+            Description: "Job scraping twice daily"
 
   JobTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
+      TableName: JobTable
       PrimaryKey:
         Name: id
         Type: String
