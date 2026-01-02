@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "docker-mcp-toolkit": {
+      "type": "http",
+      "url": "http://host.docker.internal:8811/",
+      "headers": {
+        "Authorization": "Bearer <YOUR LOCAL MCP GATEWAY TOKEN>"
+      }
+    }
+  }
+}
