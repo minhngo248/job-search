@@ -1,4 +1,0 @@
-{
-    "httpMethod": "PUT",
-    "body": "{\"id\": \"id1\",\"job_title\": \"\"}"
-}

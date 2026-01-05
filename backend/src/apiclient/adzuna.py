@@ -8,19 +8,35 @@ ADZUNA_APP_KEY = os.environ.get('ADZUNA_APP_KEY', '')
 logger = logging.getLogger()
 
 class AdzunaApiClient:
+    def __init__(self, what: str, where: str, max_days_old: int, salary_min: int, salary_max: int, what_and: str = '',
+                 sort_direction: str = 'down', sort_by: str = 'date', results_per_page: int = 50, permanent: int = 1):
+        self.what = what
+        self.where = where
+        self.max_days_old = max_days_old
+        self.salary_min = salary_min
+        self.salary_max = salary_max
+        self.what_and = what_and
+        self.sort_direction = sort_direction
+        self.sort_by = sort_by
+        self.results_per_page = results_per_page
+        self.permanent = permanent
+
     async def call_api(self):
         logger.info("[apiclient=ADZUNA] Starting API call")
-        logger.info(f"[apiclient=ADZUNA] Start calling API")
         try:
             params = {
-                'app_id': ADZUNA_APP_ID,
+                'app_id': ADZUNA_APP_ID, 
                 'app_key': ADZUNA_APP_KEY, 
-                'what': 'regulatory affairs medical device',
-                'where': 'Île-de-France',
-                #'max_days_old': 14, 
-                'sort_direction': 'down',
-                'sort_by': 'date',
-                'results_per_page': 50
+                'what': self.what,
+                'what_and': self.what_and,
+                'where': self.where, 
+                'max_days_old': self.max_days_old, 
+                'sort_direction': self.sort_direction, 
+                'sort_by': self.sort_by,
+                'results_per_page': self.results_per_page,
+                'salary_min': self.salary_min,
+                'salary_max': self.salary_max,
+                'permanent': self.permanent
             }
             logger.info(f"[apiclient=ADZUNA] Request params: {params}")
             
