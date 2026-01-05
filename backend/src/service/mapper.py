@@ -39,3 +39,24 @@ class JobMapper:
             )
             jobs.append(job_model)
         return jobs
+    
+    def map_linkedin_job(self, linkedin_job) -> List[JobModel]:
+        job_data = linkedin_job or []
+        now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        jobs = []
+        for job in job_data:
+            job_model = JobModel(
+                id=generate_job_id(job.get('jobUrl', '')),
+                job_title=job.get('position'),
+                company_name=job.get('company'),
+                link=job.get('jobUrl'),
+                source='linkedin',
+                year_of_experience=-1,
+                published_date=job.get('date'),
+                description='',
+                salary_range=None, # TODO: Extract salary if available
+                created_at=now,
+                updated_at=now
+            )
+            jobs.append(job_model)
+        return jobs

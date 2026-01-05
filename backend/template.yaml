@@ -21,6 +21,10 @@ Parameters:
     Type: String
     Description: Adzuna API App Key
     NoEcho: true
+  AllowedOrigin:
+    Type: String
+    Description: Allowed CORS origin for frontend
+    Default: 'https://job-poule.minhnn.fr'
   
 Globals:
   Function:
@@ -77,65 +81,23 @@ Resources:
             Path: /jobs/{id}
             Method: GET
 
-  putJobFunction:
-    Type: AWS::Serverless::Function
-    Connectors:
-      GetItemsConnector:
-        Properties:
-          Destination:
-            Id: JobTable
-          Permissions:
-            - Write
-    Properties:
-      Handler: src.api.put_job.handler
-      Description: A simple example includes a HTTP put method to add one job to a DynamoDB table.
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref Api
-            Path: /jobs
-            Method: PUT
-            RequestModel:
-              Model: JobModel
-              Required: true
-              ValidateBody: true
-              ValidateParameters: false
-
-  deleteByIdFunction:
-    Type: AWS::Serverless::Function
-    Connectors:
-      GetItemsConnector:
-        Properties:
-          Destination:
-            Id: JobTable
-          Permissions:
-            - Read
-            - Write
-    Properties:
-      Handler: src.api.delete_by_id.handler
-      Description: A function that handles job deletion.
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref Api
-            Path: /jobs/{id}
-            Method: DELETE
-
   optionsFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
+      Environment:
+        Variables:
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
       InlineCode: |
         import json
+        import os
         def handler(event, context):
             return {
                 'statusCode': 200,
                 'headers': {
-                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Origin': os.environ.get('ALLOWED_ORIGIN', 'https://job-poule.minhnn.fr'),
                     'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-api-key',
-                    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+                    'Access-Control-Allow-Methods': 'GET,OPTIONS',
                     'Access-Control-Max-Age': '600'
                 },
                 'body': ''
@@ -161,7 +123,7 @@ Resources:
   apiWorkerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src.apiclient.lambda_handler.handler
+      Handler: src.service.lambda_handler.handler
       Description: A function that handles scheduled item creation
       Environment:
         Variables:
@@ -200,9 +162,9 @@ Resources:
       Auth:
         ApiKeyRequired: true  # Requires API key for all methods
       Cors:
-        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowMethods: "'GET,OPTIONS'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
-        AllowOrigin: "'*'"
+        AllowOrigin: !Sub "'${AllowedOrigin}'"
         MaxAge: "'600'"
       Models:
         JobModel:

@@ -39,12 +39,7 @@ function App() {
         const configModule = await import('./config');
         const loadedConfig = configModule.config;
         
-        console.log('Configuration loaded successfully:', {
-          appName: loadedConfig.appName,
-          appVersion: loadedConfig.appVersion,
-          apiUrl: loadedConfig.apiGatewayUrl,
-          hasApiKey: !!loadedConfig.apiKey,
-        });
+        console.log('Configuration loaded successfully');
         
         setConfig(loadedConfig);
       } catch (error) {
