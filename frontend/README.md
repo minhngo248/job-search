@@ -14,7 +14,6 @@ A React TypeScript application for browsing medical device regulatory job postin
 2. Update `.env.local` with your actual values:
    ```env
    VITE_API_GATEWAY_URL=https://your-api-gateway-url.amazonaws.com/prod
-   VITE_API_KEY=your-api-key-here
    VITE_APP_NAME=Regulatory Jobs App
    VITE_APP_VERSION=1.0.0
    ```
@@ -22,7 +21,6 @@ A React TypeScript application for browsing medical device regulatory job postin
 ### Required Environment Variables
 
 - `VITE_API_GATEWAY_URL`: The API Gateway endpoint URL
-- `VITE_API_KEY`: API key for authentication
 - `VITE_APP_NAME`: Application name
 - `VITE_APP_VERSION`: Application version
 
