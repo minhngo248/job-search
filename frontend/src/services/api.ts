@@ -24,14 +24,9 @@ export interface JobRecord {
 }
 
 export interface JobsResponse {
-  jobs: JobRecord[];
-  total_count: number;
-  filters_applied: {
-    published_after?: string;
-    min_experience?: number;
-    max_experience?: number;
-    city?: string;
-  };
+  items: JobRecord[];
+  nextToken: string | null;
+  pageSize: number;
 }
 
 export interface ErrorResponse {
@@ -41,10 +36,15 @@ export interface ErrorResponse {
 }
 
 export interface JobFilters {
-  published_after?: string;
-  min_experience?: number;
-  max_experience?: number;
-  city?: string;
+  title?: string;
+  company?: string;
+  source?: string;
+  date_posted_after?: string;
+}
+
+export interface JobQueryOptions {
+  limit?: number;
+  nextToken?: string | null;
 }
 
 /**
@@ -109,35 +109,45 @@ class ApiClient {
   /**
    * Fetches jobs with optional filters
    */
-  async getJobs(filters: JobFilters = {}): Promise<JobsResponse> {
+  async getJobs(filters: JobFilters = {}, options: JobQueryOptions = {}): Promise<JobsResponse> {
     const searchParams = new URLSearchParams();
-    
-    if (filters.published_after) {
-      searchParams.append('published_after', filters.published_after);
+
+    if (filters.title) {
+      searchParams.append('job_title', filters.title);
     }
-    if (filters.min_experience !== undefined) {
-      searchParams.append('min_experience', filters.min_experience.toString());
+    if (filters.company) {
+      searchParams.append('company_name', filters.company);
     }
-    if (filters.max_experience !== undefined) {
-      searchParams.append('max_experience', filters.max_experience.toString());
+    if (filters.source) {
+      searchParams.append('source', filters.source.toLowerCase());
     }
-    if (filters.city) {
-      searchParams.append('city', filters.city);
+    if (filters.date_posted_after) {
+      searchParams.append('date_posted_after', filters.date_posted_after);
+    }
+    if (options.limit) {
+      searchParams.append('limit', options.limit.toString());
+    }
+    if (options.nextToken) {
+      searchParams.append('nextToken', options.nextToken);
     }
 
     const queryString = searchParams.toString();
     const endpoint = `/jobs${queryString ? `?${queryString}` : ''}`;
-    
-    // Backend returns array directly, need to transform to expected format
-    const rawJobs = await this.request<any[]>(endpoint);
-    
-    // Transform backend response to match frontend interface
-    const jobs: JobRecord[] = rawJobs.map(item => ({
+
+    type RawJobsResponse = {
+      items: any[];
+      nextToken?: string | null;
+      pageSize?: number;
+    };
+
+    const rawResponse = await this.request<RawJobsResponse>(endpoint);
+
+    const items: JobRecord[] = (rawResponse.items || []).map((item) => ({
       id: item.id || '',
       job_title: item.job_title || '',
       company_name: item.company_name || '',
       city: item.city || 'Non spécifié',
-      year_of_experience: parseInt(item.year_of_experience) || 0,
+      year_of_experience: Number(item.year_of_experience) || 0,
       published_date: item.published_date || '',
       link: item.link || '',
       source: item.source || '',
@@ -147,13 +157,13 @@ class ApiClient {
       updated_at: item.updated_at || '',
       company_logo_url: item.company_logo_url,
       tags: item.tags || [],
-      is_featured: item.is_featured || false
+      is_featured: item.is_featured || false,
     }));
 
     return {
-      jobs,
-      total_count: jobs.length,
-      filters_applied: filters
+      items,
+      nextToken: rawResponse.nextToken ?? null,
+      pageSize: rawResponse.pageSize ?? options.limit ?? 10,
     };
   }
 }

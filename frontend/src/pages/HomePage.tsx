@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { ChangeEvent } from 'react';
 import '../App.css';
 import { JobFilters, JobList } from '../components';
 import { useJobs } from '../hooks';
@@ -11,6 +12,8 @@ interface AppConfig {
   apiGatewayUrl: string;
 }
 
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+
 function HomePage() {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [configError, setConfigError] = useState<string | null>(null);
@@ -22,11 +25,17 @@ function HomePage() {
     jobs,
     loading: jobsLoading,
     error: jobsError,
-    totalCount,
     filters,
     setFilters,
     refreshJobs,
     clearError,
+    pageSize,
+    setPageSize,
+    currentPage,
+    hasNextPage,
+    hasPreviousPage,
+    goToNextPage,
+    goToPreviousPage,
   } = useJobs();
 
   useEffect(() => {
@@ -106,6 +115,11 @@ function HomePage() {
   };
 
   const isAuthenticated = auth?.isAuthenticated;
+
+  const handlePageSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const value = Number(event.target.value);
+    setPageSize(value);
+  };
 
   const handleSignOutClick = async () => {
     try {
@@ -202,8 +216,47 @@ function HomePage() {
               jobs={jobs}
               loading={jobsLoading}
               error={jobsError}
-              totalCount={totalCount}
             />
+
+            <div className="pagination-controls" role="navigation" aria-label="Pagination des offres">
+              <div className="page-info">
+                <strong>Page</strong>
+                <span>{currentPage}</span>
+              </div>
+
+              <div className="page-size-selector">
+                <label htmlFor="page-size">Résultats / page</label>
+                <select
+                  id="page-size"
+                  value={pageSize}
+                  onChange={handlePageSizeChange}
+                  disabled={jobsLoading}
+                >
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="page-buttons">
+                <button
+                  type="button"
+                  onClick={goToPreviousPage}
+                  disabled={!hasPreviousPage || jobsLoading}
+                >
+                  ← Précédent
+                </button>
+                <button
+                  type="button"
+                  onClick={goToNextPage}
+                  disabled={!hasNextPage || jobsLoading}
+                >
+                  Suivant →
+                </button>
+              </div>
+            </div>
           </section>
         </div>
       </main>

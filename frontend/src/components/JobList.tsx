@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import type { JobRecord } from '../services/api';
 import { JobCard } from './JobCard';
 import { JobCardSkeleton } from './JobCardSkeleton';
-import { JobListHeader, type SortOption } from './JobListHeader';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import './JobList.css';
 
@@ -10,13 +9,11 @@ interface JobListProps {
   jobs?: JobRecord[];
   loading: boolean;
   error: string | null;
-  totalCount: number;
+  totalCount?: number;
   onLoadMore?: () => void;
   hasMore?: boolean;
   loadingMore?: boolean;
   enableVirtualScrolling?: boolean; // New prop for virtual scrolling
-  sortBy?: SortOption;
-  onSortChange?: (sortBy: SortOption) => void;
   enableKeyboardNavigation?: boolean;
 }
 
@@ -24,13 +21,11 @@ export const JobList: React.FC<JobListProps> = ({
   jobs = [],
   loading,
   error,
-  totalCount,
+  totalCount: _totalCount = 0,
   onLoadMore,
   hasMore = false,
   loadingMore = false,
   enableVirtualScrolling = false,
-  sortBy = 'date_desc',
-  onSortChange,
   enableKeyboardNavigation = true
 }) => {
   // Ensure jobs is always an array
@@ -77,13 +72,10 @@ export const JobList: React.FC<JobListProps> = ({
   if (loading && safeJobs.length === 0) {
     return (
       <div className="job-list-container">
-        <JobListHeader
-          totalCount={0}
-          displayedCount={0}
-          sortBy={sortBy}
-          onSortChange={onSortChange || (() => {})}
-          loading={true}
-        />
+        <div className="job-list-summary" id="job-count-heading">
+          <h3>Chargement des offres</h3>
+          <span>0 affichée</span>
+        </div>
         <div 
           className="job-list skeleton-loading" 
           role="list" 
@@ -129,13 +121,10 @@ export const JobList: React.FC<JobListProps> = ({
 
   return (
     <div className="job-list-container">
-      <JobListHeader
-        totalCount={totalCount}
-        displayedCount={safeJobs.length}
-        sortBy={sortBy}
-        onSortChange={onSortChange || (() => {})}
-        loading={loading}
-      />
+      <div className="job-list-summary" id="job-count-heading" role="status" aria-live="polite">
+        <h3>Offres affichées</h3>
+        <p>{safeJobs.length}</p>
+      </div>
 
       <div 
         ref={containerRef}

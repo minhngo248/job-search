@@ -100,16 +100,12 @@ Resources:
 
   GetAllJobsFunction:
     Type: AWS::Serverless::Function
-    Connectors:
-      GetItemsConnector:
-        Properties:
-          Destination:
-            Id: JobTable
-          Permissions:
-            - Read
     Properties:
       Handler: src.api.get_all_jobs.handler
       Description: A simple example includes a HTTP get method to get all items from a DynamoDB table.
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref JobTable
       Events:
         Api:
           Type: Api
@@ -120,16 +116,12 @@ Resources:
 
   GetByIdFunction:
     Type: AWS::Serverless::Function
-    Connectors:
-      GetItemsConnector:
-        Properties:
-          Destination:
-            Id: JobTable
-          Permissions:
-            - Read
     Properties:
       Handler: src.api.get_by_id.handler
       Description: A simple example includes a HTTP get method to get one item by id from a DynamoDB table.
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref JobTable
       Events:
         Api:
           Type: Api
@@ -185,15 +177,29 @@ Resources:
             Description: "Job scraping twice daily"
 
   JobTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
       TableName: JobTable
-      PrimaryKey:
-        Name: id
-        Type: String
-      ProvisionedThroughput:
-        ReadCapacityUnits: 2
-        WriteCapacityUnits: 2
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: published_date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublishedDatePkIndex
+          KeySchema:
+            - AttributeName: pk
+              KeyType: HASH
+            - AttributeName: published_date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   UserTable:
     Type: AWS::Serverless::SimpleTable
@@ -203,8 +209,8 @@ Resources:
         Name: id
         Type: String
       ProvisionedThroughput:
-        ReadCapacityUnits: 2
-        WriteCapacityUnits: 2
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 
   Api:
     Type: AWS::Serverless::Api
