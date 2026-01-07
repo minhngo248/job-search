@@ -15,7 +15,7 @@ from src.handlers.get_all_jobs import handler
 @pytest.fixture
 def mock_env():
     """Mock environment variables."""
-    with patch.dict(os.environ, {'DYNAMODB_TABLE': 'test-jobs-table'}):
+    with patch.dict(os.environ, {'DYNAMODB_JOB_TABLE': 'test-jobs-table'}):
         yield
 
 

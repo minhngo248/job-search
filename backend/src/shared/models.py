@@ -19,3 +19,15 @@ class JobModel(BaseModel):
     salary_range: Optional[float] = None,
     created_at: Optional[str] = None,
     updated_at: Optional[str] = None
+
+class UserModel(BaseModel):
+    """
+    User record model representing a user in the system.
+    
+    This model defines the structure and validation rules for users
+    stored in DynamoDB and returned by the API.
+    """
+    id: str
+    email: str
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None

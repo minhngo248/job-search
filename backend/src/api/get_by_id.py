@@ -42,9 +42,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     logger.info(f"Received event: {json.dumps(event)}")
     
     # Get table name from environment
-    table_name = os.environ.get('DYNAMODB_TABLE')
+    table_name = os.environ.get('DYNAMODB_JOB_TABLE')
     if not table_name:
-        raise ValueError("DYNAMODB_TABLE environment variable is required")
+        raise ValueError("DYNAMODB_JOB_TABLE environment variable is required")
     
     table = dynamodb.Table(table_name)
     

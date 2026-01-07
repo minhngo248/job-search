@@ -100,7 +100,7 @@ aws dynamodb create-table \
 ### Start Local API
 
 ```bash
-sam local start-api --port 8181 --docker-network sam-dynamodb --env-vars ./test-env.json
+sam local start-api --port 8181 --docker-network sam-dynamodb --env-vars ./env.json
 ```
 
 This starts the API Gateway locally on port 8181. You can test the endpoints:
@@ -125,14 +125,12 @@ curl -X DELETE http://localhost:8181/job-123
 
 ```bash
 # Test with sample events
-sam local invoke getAllJobsFunction --event events/event-get-all-items.json \
-  --docker-network sam-dynamodb --env-vars ./test-env.json
-sam local invoke getByIdFunction --event events/event-get-by-id.json \
-  --docker-network sam-dynamodb --env-vars ./test-env.json
-sam local invoke putJobFunction --event events/event-put-item.json \
-  --docker-network sam-dynamodb --env-vars ./test-env.json
-sam local invoke deleteByIdFunction --event events/event-delete-by-id.json \
-  --docker-network sam-dynamodb --env-vars ./test-env.json
+sam local invoke GetAllJobsFunction --event events/event-get-all-items.json \
+  --docker-network sam-dynamodb --env-vars ./env.json
+sam local invoke GetByIdFunction --event events/event-get-by-id.json \
+  --docker-network sam-dynamodb --env-vars ./env.json
+sam local invoke WorkerFunction --event events/event-worker.json \
+  --docker-network sam-dynamodb --env-vars ./env.json
 ```
 
 ## API Endpoints
@@ -182,7 +180,7 @@ Optional fields:
 
 ```bash
 # Tail logs for a specific function
-sam logs -n getAllJobsFunction --stack-name <your-stack-name> --tail
+sam logs -n GetAllJobsFunction --stack-name <your-stack-name> --tail
 
 # View logs for all functions
 sam logs --stack-name <your-stack-name> --tail

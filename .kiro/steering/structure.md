@@ -64,7 +64,7 @@ backend/template.yaml  # AWS SAM infrastructure as code
 ### Lambda Functions
 - Each Lambda has its own handler in `src/handlers/`
 - Python modules with `.py` extension
-- Environment variables for resource names (e.g., `DYNAMODB_TABLE`)
+- Environment variables for resource names (e.g., `DYNAMODB_JOB_TABLE`)
 - Pydantic models for request/response validation
 
 ### API Structure

@@ -2,7 +2,7 @@
  * API service for communicating with the backend
  */
 
-import { apiGatewayUrl, apiKey } from '../config';
+import { apiGatewayUrl } from '../config';
 
 export interface JobRecord {
   id: string;
@@ -52,11 +52,9 @@ export interface JobFilters {
  */
 class ApiClient {
   private baseUrl: string;
-  private apiKey: string;
 
-  constructor(baseUrl: string, apiKey: string) {
+  constructor(baseUrl: string) {
     this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
-    this.apiKey = apiKey;
   }
 
   /**
@@ -70,7 +68,6 @@ class ApiClient {
     
     const headers = {
       'Content-Type': 'application/json',
-      'X-Api-Key': this.apiKey,
       ...options.headers,
     };
 
@@ -181,4 +178,4 @@ export class ApiError extends Error {
 }
 
 // Create and export the default API client instance
-export const apiClient = new ApiClient(apiGatewayUrl, apiKey);
+export const apiClient = new ApiClient(apiGatewayUrl);

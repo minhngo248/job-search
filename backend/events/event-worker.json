@@ -1,0 +1,3 @@
+{
+    "endpoint_url": "http://dynamodb-local:8000"
+}

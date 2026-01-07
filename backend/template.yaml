@@ -24,7 +24,7 @@ Parameters:
   AllowedOrigin:
     Type: String
     Description: Allowed CORS origin for frontend
-    Default: 'https://job-poule.minhnn.fr'
+    Default: '*'
   
 Globals:
   Function:
@@ -38,10 +38,67 @@ Globals:
     Environment:
       Variables:
         DYNAMODB_ENDPOINT: ''
-        DYNAMODB_TABLE: !Ref JobTable
+        DYNAMODB_JOB_TABLE: !Ref JobTable
+        DYNAMODB_USER_TABLE: !Ref UserTable
 
 Resources:
-  getAllJobsFunction:
+  # Cognito User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: JobPouleUserPool
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: false
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+      LambdaConfig:
+        PostConfirmation: !GetAtt PostConfirmationFunction.Arn
+
+  # Lambda function triggered after user confirmation
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src.cognito.post_confirmation.handler
+      Description: Automatically create user record in DynamoDB after Cognito signup
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+
+  # Permission for Cognito to invoke the Lambda
+  PostConfirmationInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostConfirmationFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt UserPool.Arn
+
+  # User Pool Client (Required for frontend)
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: JobPouleWebClient
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  # Cognito User Pool Domain
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub 'job-poule-${AWS::AccountId}'
+      UserPoolId: !Ref UserPool
+
+  GetAllJobsFunction:
     Type: AWS::Serverless::Function
     Connectors:
       GetItemsConnector:
@@ -61,7 +118,7 @@ Resources:
             Path: /jobs
             Method: GET
 
-  getByIdFunction:
+  GetByIdFunction:
     Type: AWS::Serverless::Function
     Connectors:
       GetItemsConnector:
@@ -81,27 +138,14 @@ Resources:
             Path: /jobs/{id}
             Method: GET
 
-  optionsFunction:
+  OptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.handler
+      Handler: src.api.options.handler
+      Description: Handle CORS preflight OPTIONS requests
       Environment:
         Variables:
           ALLOWED_ORIGIN: !Ref AllowedOrigin
-      InlineCode: |
-        import json
-        import os
-        def handler(event, context):
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Access-Control-Allow-Origin': os.environ.get('ALLOWED_ORIGIN', 'https://job-poule.minhnn.fr'),
-                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-api-key',
-                    'Access-Control-Allow-Methods': 'GET,OPTIONS',
-                    'Access-Control-Max-Age': '600'
-                },
-                'body': ''
-            }
       Events:
         JobsOptions:
           Type: Api
@@ -109,18 +153,14 @@ Resources:
             RestApiId: !Ref Api
             Path: /jobs
             Method: OPTIONS
-            Auth:
-              ApiKeyRequired: false
         JobsByIdOptions:
           Type: Api
           Properties:
             RestApiId: !Ref Api
             Path: /jobs/{id}
             Method: OPTIONS
-            Auth:
-              ApiKeyRequired: false
 
-  apiWorkerFunction:
+  WorkerFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src.service.lambda_handler.handler
@@ -155,101 +195,47 @@ Resources:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
 
+  UserTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: UserTable
+      PrimaryKey:
+        Name: id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
   Api:
     Type: AWS::Serverless::Api
     Properties:
       StageName: prod
       Auth:
-        ApiKeyRequired: true  # Requires API key for all methods
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt UserPool.Arn
+            Identity:
+              Header: Authorization
       Cors:
-        AllowMethods: "'GET,OPTIONS'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
-        AllowOrigin: !Sub "'${AllowedOrigin}'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization'"
+        AllowOrigin: !Sub "${AllowedOrigin}"
         MaxAge: "'600'"
-      Models:
-        JobModel:
-          type: object
-          required:
-            - job_title
-            - company_name
-            - link
-            - source
-            - year_of_experience
-            - published_date
-          properties:
-            job_title:
-              type: string
-              minLength: 1
-              maxLength: 100
-              pattern: "^[a-zA-Z0-9\\s\\-\\.\\(\\)\\/\\&\\,]+$"
-            company_name:
-              type: string
-              minLength: 1
-              maxLength: 100
-              pattern: "^[a-zA-Z0-9\\s\\-\\.\\(\\)\\/\\&\\,]+$"
-            link:
-              type: string
-              minLength: 1
-              maxLength: 100
-              pattern: "^https?:\\/\\/[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,}(\\/[a-zA-Z0-9\\-\\._~:\\/?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=]*)?$"
-            source:
-              type: string
-              enum: ['LinkedIn', 'Glassdoor', 'leem', 'snitem', 'other']
-            year_of_experience:
-              type: number
-              minimum: 0
-            published_date:
-              type: string
-              format: date-time
-            description:
-              type: string
-              minLength: 0
-              maxLength: 500
-              pattern: "^[a-zA-Z0-9\\s\\-\\.\\(\\)\\/\\&\\,\\n\\r\\t\\!\\?\\:;'\"]+$"
-            salary_range:
-              type: number
-              minimum: 0
-
-  ApiKey:
-    Type: AWS::ApiGateway::ApiKey
-    Properties:
-      Name: JobApiKey
-      Enabled: true
-      Description: API Key for accessing the SAM API
-      StageKeys:
-        - RestApiId: !Ref Api
-          StageName: !Ref Api.Stage
-
-  # Usage Plan Key (associates API key with usage plan)
-  UsagePlanKey:
-    Type: AWS::ApiGateway::UsagePlanKey
-    Properties:
-      KeyId: !Ref ApiKey
-      KeyType: API_KEY
-      UsagePlanId: !Ref UsagePlan
-
-  # Create your own usage plan with full control
-  UsagePlan:
-    Type: AWS::ApiGateway::UsagePlan
-    Properties:
-      UsagePlanName: MyUsagePlan
-      Description: "Custom usage plan with specific settings"
-      Throttle:
-        BurstLimit: 100
-        RateLimit: 50
-      ApiStages:
-        - ApiId: !Ref Api
-          Stage: !Ref Api.Stage
 
 Outputs:
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolId"
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientId"
+  UserPoolDomain:
+    Description: Cognito User Pool Domain
+    Value: !Sub 'https://job-poule-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com'
   WebEndpoint:
     Description: API Gateway endpoint URL for prod stage
     Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/prod'
-  ApiKeyId:
-    Description: API Key ID
-    Value: !Ref ApiKey
-  UsagePlanId:
-    Description: "Usage Plan ID"
-    Value: !Ref UsagePlan
-    Export:
-      Name: !Sub "${AWS::StackName}-UsagePlanId"

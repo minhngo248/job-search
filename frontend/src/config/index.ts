@@ -4,7 +4,6 @@
 
 interface AppConfig {
   apiGatewayUrl: string;
-  apiKey: string;
   appName: string;
   appVersion: string;
 }
@@ -38,13 +37,11 @@ function validateUrl(url: string, name: string): string {
 function loadConfig(): AppConfig {
   try {
     const apiGatewayUrl = getRequiredEnvVar('VITE_API_GATEWAY_URL');
-    const apiKey = getRequiredEnvVar('VITE_API_KEY');
     const appName = getRequiredEnvVar('VITE_APP_NAME');
     const appVersion = getRequiredEnvVar('VITE_APP_VERSION');
 
     return {
       apiGatewayUrl: validateUrl(apiGatewayUrl, 'VITE_API_GATEWAY_URL'),
-      apiKey: apiKey.trim(),
       appName: appName.trim(),
       appVersion: appVersion.trim(),
     };
@@ -60,7 +57,7 @@ function loadConfig(): AppConfig {
 export const config = loadConfig();
 
 // Export individual config values for convenience
-export const { apiGatewayUrl, apiKey, appName, appVersion } = config;
+export const { apiGatewayUrl, appName, appVersion } = config;
 
 // Export validation functions for testing
 export { validateUrl, getRequiredEnvVar };
